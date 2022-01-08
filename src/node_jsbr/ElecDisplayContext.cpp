@@ -25,8 +25,8 @@ void ElecDisplayContext::init(ElecView *pView)
     m_pDefPO = static_cast<ElecProgramObject *>(createProgramObject("default"));
 
     qlib::MapTable<qlib::LString> file_names;
-    file_names.set("vertex", "shaders/vertex_shader.glsl");
-    file_names.set("fragment", "shaders/fragment_shader.glsl");
+    file_names.set("vertex", "%%CONFDIR%%/shaders/vertex_shader.glsl");
+    file_names.set("fragment", "%%CONFDIR%%/shaders/fragment_shader.glsl");
 
     m_pDefPO->loadShaders(file_names);
 }

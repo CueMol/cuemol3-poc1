@@ -11,6 +11,8 @@
 #include <qlib/LPerfMeas.hpp>
 #include <version.hpp>
 
+#include "SysConfig.hpp"
+
 using namespace qsys;
 
 SINGLETON_BASE_IMPL(SceneManager);
@@ -271,4 +273,10 @@ LString SceneManager::getVerArchName() const
 void SceneManager::doIdleTask()
 {
     checkAndUpdateScenes();
+}
+
+LString SceneManager::convPath(const LString &path)
+{
+    SysConfig *pconf = SysConfig::getInstance();
+    return pconf->convPathName(path);
 }

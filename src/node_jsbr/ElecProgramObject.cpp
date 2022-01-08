@@ -1,6 +1,7 @@
 #include "ElecProgramObject.hpp"
 
 #include <qlib/FileStream.hpp>
+#include <qsys/SysConfig.hpp>
 
 #include "ElecView.hpp"
 
@@ -26,8 +27,7 @@ bool ElecProgramObject::loadShaders(const qlib::MapTable<qlib::LString> &file_na
     }
 
     auto method = peer.Get("createShader").As<Napi::Function>();
-    auto rval =
-        method.Call(peer, {Napi::String::New(env, getName().c_str()), args});
+    auto rval = method.Call(peer, {Napi::String::New(env, getName().c_str()), args});
 
     // int shader_id = rval.As<Napi::Number>().Int32Value();
     // printf("shader ID: %d\n", shader_id);
@@ -39,9 +39,9 @@ bool ElecProgramObject::loadShaders(const qlib::MapTable<qlib::LString> &file_na
 
 qlib::LString ElecProgramObject::loadFile(const qlib::LString &filename)
 {
-    // SysConfig *pconf = SysConfig::getInstance();
-    // LString fnam = pconf->convPathName(filename);
-    qlib::LString fnam = filename;
+    auto pconf = qsys::SysConfig::getInstance();
+    LString fnam = pconf->convPathName(filename);
+    // qlib::LString fnam = filename;
 
     // read source file
     qlib::FileInStream fis;
