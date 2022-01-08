@@ -24,7 +24,7 @@ def main():
 
         for in_js in file_list:
             stem = in_js.stem
-            f.write(f"import {{ {stem} }} from './wrappers/{stem}.js'\n")
+            f.write(f"import {{ {stem} }} from './wrappers/{stem}.js';\n")
 
         f.write("\n")
         f.write("\n")
