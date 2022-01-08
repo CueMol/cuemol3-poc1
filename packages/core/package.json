@@ -1,0 +1,25 @@
+{
+  "name": "core",
+  "version": "1.0.0",
+  "description": "cuemol core package",
+  "main": "index.js",
+  "scripts": {
+    "install": "cmake-js compile --directory ../.. --out ./build",
+    "build": "cmake-js build --directory ../.. --out ./build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bindings": "^1.5.0",
+    "cmake-js": "^6.3.0"
+  },
+  "devDependencies": {
+    "node-addon-api": "^4.2.0"
+  },
+  "cmake-js": {
+    "runtime": "electron",
+    "runtimeVersion": "16.0.6",
+    "arch": "x64"
+  }
+}

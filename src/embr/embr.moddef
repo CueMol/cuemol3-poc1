@@ -1,0 +1,11 @@
+// -*-Mode: C++;-*-
+
+#include "EmView.qif"
+
+module embr
+{
+  init embr::init();
+  fini embr::fini();
+
+  EmView;
+};

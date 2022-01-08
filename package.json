@@ -1,0 +1,18 @@
+{
+  "name": "cuemo3-poc1",
+  "version": "1.0.0",
+  "description": "CueMol3 PoC1",
+  "private": true,
+  "scripts": {
+    "start": "electron ./jssrc/main.js"
+  },
+  "devDependencies": {
+    "electron-rebuild": "^3.2.3",
+    "node-addon-api": "^4.2.0"
+  },
+  "workspaces": [
+    "packages/core",
+    "packages/electron_gui",
+    "examples/simple_cli"
+  ]
+}

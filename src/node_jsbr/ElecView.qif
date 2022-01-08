@@ -1,0 +1,18 @@
+// -*-Mode: C++;-*-
+
+#include <qsys/View.qif>
+
+runtime_class ElecView extends View
+{
+    client_hdr "ElecView.hpp";
+    client_name node_jsbr::ElecView;
+
+    scriptable;
+    smartptr;
+
+    // void setSclFac(real x, real y) => setSclFac;
+
+    void onMouseDown(real clientX, real clientY, real screenX, real screenY, integer modif) => onMouseDown;
+    void onMouseUp(real clientX, real clientY, real screenX, real screenY, integer modif) => onMouseUp;
+    void onMouseMove(real clientX, real clientY, real screenX, real screenY, integer modif) => onMouseMove;
+};

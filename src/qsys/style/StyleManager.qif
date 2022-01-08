@@ -1,0 +1,116 @@
+// -*-Mode: C++;-*-
+//
+// Style manager scripting interface
+//
+
+#ifndef STYLE_MANAGER_QIF_INCLUDED
+#define STYLE_MANAGER_QIF_INCLUDED
+
+#include <qlib/LScrObject.qif>
+#include <gfx/AbstractColor.qif>
+#include "StyleSet.qif"
+
+runtime_class StyleManager
+{
+  client_hdr "StyleMgr.hpp";
+  client_name qsys::StyleMgr;
+
+  // interface attributes
+  scriptable;
+  singleton;
+
+  /////////////////////////////////////////////////////////////
+  //
+  // properties
+  //
+  
+  property string defaultDir => redirect(getDefaultDir, XXX) (readonly);
+
+  /////////////////////////////////////////////////////////////
+  //
+  // methods
+  //
+
+  //
+  // styles, style sets
+  //
+  
+  integer createStyleSet(string name, integer nScopeID) => createStyleSetScr;
+
+  /// returns UID of styleset with name
+  integer hasStyleSet(string name, integer nScopeID);
+
+  /// destroy styleset by ID (and scope ID)
+  boolean destroyStyleSet(integer nScopeID, integer nStyleSetID);
+  
+  /// Register the (scene-unbound) StyleSet
+  boolean registerStyleSet(object<StyleSet$> pSet, integer nbefore, integer nScopeID);
+
+  /// Get style set by UID
+  object<StyleSet$> getStyleSet(integer nStyleSetID) => getStyleSetById2;
+
+  string getStyleSetSource(integer nStyleSetID);
+
+  string getStyleSetsJSON(integer nScopeID);
+
+  //
+  // File I/O
+  //
+
+  /// Save style-set to file (StyleMgrStyleImpl.cpp)
+  boolean saveStyleSetToFile(integer nScopeID, integer nStyleSetID, string path_name);
+
+  /// Load style-set from file (StyleMgrStyleImpl.cpp)
+  integer loadStyleSetFromFile(integer nScopeID, string path_name, boolean bReadOnly);
+
+
+  /////////////////////////////////////////////////////////////
+  // Color operation
+
+  object<AbstractColor$> getColor(string name, integer nScopeID);
+
+  object<AbstractColor$> getColor2(string name, integer nScopeID, integer nStyleSetID) => getColor;
+  boolean setColor(string key, object<AbstractColor$> value, integer nScopeID, integer nStyleSetID);
+  boolean removeColor(string key, integer nSceneID, integer nStyleSetID);
+
+  object<AbstractColor$> compileColor(string rep, integer nScopeID);
+
+  string getColorDefsJSON(integer nScopeID);
+  string getColorDefsJSON2(integer nScopeID, integer nStyleSetID) => getColorDefsJSON;
+
+  string getMaterialNamesJSON(integer nScopeID);
+  string getMaterialNamesJSON2(integer nScopeID, integer nStyleSetID) => getMaterialNamesJSON;
+
+  /////////////////////////////////////////////////////////////
+  // String data (selection, etc.) operation
+  
+  string getStrDataDefsJSON(string cat, integer nScopeID);
+  string getStrDataDefsJSON2(string cat, integer nScopeID, integer nStyleSetID) => getStrDataDefsJSON;
+
+  string getStrData(string cat, string name, integer nScopeID);
+  string getStrData2(string cat, string name, integer nScopeID, integer nStyleSetID) => getStrData;
+  boolean setStrData(string cat, string key, string value, integer nScopeID, integer nStyleSetID);
+  boolean removeStrData(string cat, string key, integer nSceneID, integer nStyleSetID);
+
+  /////////////////////////////////////////////////////////////
+  // Style value operations
+
+  // String-based methods
+
+  /// Get style's value by string key in dot notation
+  string getStyleValue(integer nSceneID, string setId, string key);
+
+  /// Set style's value by string key in dot notation
+  void setStyleValue(integer nSceneID, string setId, string key, string value);
+
+  /// Get names (IDs) of defined styles in this
+  string getStyleNamesJSON(integer nScopeID);
+
+  /// Create a new style based on the LScrObject (i.e. renderer, etc)
+  void createStyleFromObj(integer nSceneID, integer setId, string key, object<LScrObject$> obj);
+
+  void firePendingEvents();
+};
+
+#endif
+// Style_MANAGER_QIF_INCLUDED

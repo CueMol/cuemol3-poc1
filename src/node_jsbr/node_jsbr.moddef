@@ -1,0 +1,11 @@
+// -*-Mode: C++;-*-
+
+#include "ElecView.qif"
+
+module node_jsbr
+{
+  init node_jsbr::init();
+  fini node_jsbr::fini();
+
+  ElecView;
+};

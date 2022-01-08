@@ -1,0 +1,79 @@
+// -*-Mode: C++;-*-
+//
+// $Id: Matrix.qif,v 1.4 2011/04/09 12:17:09 rishitani Exp $
+
+#ifndef MATRIX_QIF_INCLUDED
+#define MATRIX_QIF_INCLUDED
+
+// C++ name: LScrMatrix4D
+// C++ class decl: LScrMatrix4D.hpp
+// Script/Runtime name: Matrix
+
+#include "Vector.qif"
+
+runtime_class Matrix
+{
+  uuid b043fe2e-e75d-487c-9958-cdbaf94e4436;
+
+  client_hdr "LScrMatrix4D.hpp";
+  client_name qlib::LScrMatrix4D;
+
+  scriptable;
+  cloneable;
+  smartptr;
+
+  // methods
+  string toString();
+
+  boolean equals(object<Matrix>);
+
+  // operations on element
+  void setAt(integer, integer, real);
+  real getAt(integer, integer);
+  real addAt(integer, integer, real);
+
+  // operations
+  object<Matrix> scale(real);
+  object<Matrix> divide(real);
+  object<Matrix> add(object<Matrix>);
+  object<Matrix> sub(object<Matrix>);
+  object<Matrix> mul(object<Matrix>);
+  object<Vector> mulvec(object<Vector>);
+
+  /// for compatibility
+  void setUnit();
+
+  /// set Identity matrix
+  void setIdent();
+
+  /// set as rotation matrix (cen, axis, degree)
+  void setRotate(object<Vector> cen, object<Vector> ax, real degree);
+
+  /// set as translation matrix (shift)
+  void setTranslate(object<Vector> shift);
+
+  /// check identity matrix
+  boolean isIdent();
+
+  /// set zero matrix
+  void setZero();
+
+  /// check zero matrix
+  boolean isZero();
+
+  /// diagonalization as 3x3 matrix
+  object<Matrix> diag3();
+  
+  // operations on row/col vec
+  void setRow(integer i, object<Vector>);
+  void setCol(integer i, object<Vector>);
+
+  /// get row vector
+  object<Vector> row(integer i);
+
+  /// get column vector
+  object<Vector> col(integer i);
+};
+
+#endif
+

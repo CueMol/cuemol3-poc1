@@ -1,0 +1,68 @@
+// -*-Mode: C++;-*-
+//
+// $Id: SceneManager.qif,v 1.8 2010/10/12 14:20:14 rishitani Exp $
+
+#ifndef SCENE_MANAGER_QIF_INCLUDED
+#define SCENE_MANAGER_QIF_INCLUDED
+
+#include <qlib/LScrObject.qif>
+#include "Scene.qif"
+#include "View.qif"
+#include "Object.qif"
+#include "Renderer.qif"
+
+runtime_class SceneManager
+{
+  uuid edd3b4e3-ae26-48e3-b76a-9c32120af11a;
+
+  client_hdr "SceneManager.hpp";
+  client_name qsys::SceneManager;
+
+  scriptable;
+
+  // 
+  singleton;
+
+  object<Scene$> createScene();
+  object<Scene$> getScene(integer uid);
+  object<Scene$> getSceneByName(string name);
+  boolean destroyScene(integer uid);
+
+  void destroyAllScenes();
+  void checkAndUpdateScenes();
+  string getSceneUIDList();
+  property string scene_uids => redirect(getSceneUIDList, XXX) (readonly);
+
+  object<Object$> getObject(integer uid);
+  object<View$> getView(integer uid);
+  object<Renderer$> getRenderer(integer uid);
+
+  /// generic method to get any UID object (scene, rend, view, obj, etc)
+  object<LScrObject$> getUIDObj(integer uid);
+
+  void dump();
+
+  /// object<Scene$> loadSceneFrom(string path, string ftype);
+
+  property integer activeSceneID => redirect(getActiveSceneID, XXX) (readonly, nopersist);
+
+  void setActiveSceneID(integer);
+
+  //// version info
+
+  /// version number (x.x.x.x)
+  property string version => redirect(getVersion, XXX) (readonly);
+  /// build ID number
+  property string build => redirect(getBuildID, XXX) (readonly);
+  /// version architecture (32/64bit, etc)
+  property string ver_arch => redirect(getVerArchName, XXX) (readonly);
+
+  //// Performance measurement
+  void enablePerfMeas(integer naver);
+
+  void disablePerfMeas();
+
+};
+
+#endif
+

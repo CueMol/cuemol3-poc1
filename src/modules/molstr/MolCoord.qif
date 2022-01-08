@@ -1,0 +1,98 @@
+// -*-Mode: C++;-*-
+//
+// Molecular object scripting interface
+//
+
+#ifndef MOL_COORD_QIF_INCLUDED
+#define MOL_COORD_QIF_INCLUDED
+
+#include <qlib/Vector.qif>
+#include <qlib/Matrix.qif>
+#include <qlib/ByteArray.qif>
+
+#include <qsys/Object.qif>
+#include <qsys/View.qif>
+
+#include "SelCommand.qif"
+#include "MolAtom.qif"
+#include "MolChain.qif"
+#include "ColoringScheme.qif"
+
+runtime_class MolCoord extends Object
+{
+  client_hdr "MolCoord.hpp";
+  client_name molstr::MolCoord;
+  dllexport MOLSTR_API;
+  using SelCommand;
+
+  scriptable;
+  smartptr;
+
+  // property string name => redirect(getName, setName);
+  property object<MolSelection$> sel => redirect(getSelection, setSelection);
+  default sel = molstr::SelectionPtr(new molstr::SelCommand());
+
+  // default molecular coloring refered by $molcol notation
+  property object<ColoringScheme$> coloring => redirect(getColSchm, setColSchm);
+  default coloring = molstr::ColoringScheme::createDefaultS();
+
+  property object<AbstractColor$> defaultcolor => redirect(getDefaultColor, setDefaultColor);
+  default defaultcolor = gfx::SolidColor::createRGB(1.0, 1.0, 1.0, 1.0);
+
+  //////////////////////
+  // Access methods
+
+  object<MolAtom$> getAtomByID(integer aid) => getAtom;
+  object<MolAtom$> getAtom(string name, string sindex, string atomname) => getAtomScr;
+  object<MolResidue$> getResidue(string name, string sindex) =>getResidScr;
+  object<MolChain$> getChain(string name);
+
+  integer getAtomSize();
+  integer getAtomSelSize(object<MolSelection$> psel) => getAtomSize;
+
+  /// Encode model ID into the chain name
+  string encodeModelInChain(string chain_name, integer imodel);
+
+  string getChainsJSON();
+
+  object<Vector> getCenterPos(boolean fsel) => getCenterPosScr;
+  object<Vector> getBoundBoxMin(boolean fsel) => getBoundBoxMinScr;
+  object<Vector> getBoundBoxMax(boolean fsel) => getBoundBoxMaxScr;
+
+  void fitView(object<View$> pView, boolean fsel);
+  void fitView2(object<View$> pView, object<MolSelection$> sel);
+
+  // Operations
+  string getChainNameCandsJSON();
+  string getResidNameCandsJSON();
+  string getAtomNameCandsJSON();
+  string getElemNameCandsJSON();
+
+  // Edit
+  boolean copyAtoms(object<MolCoord$> pmol2, object<MolSelection$> psel2);
+  boolean deleteAtoms(object<MolSelection$> psel);
+
+  void xformByMat(object<Matrix> mat, object<MolSelection$> psel);
+
+  integer appendAtom1(object<MolAtom$> pAtom, string chain, integer resid, string resn) => appendAtomScr1;
+
+  // Fire atomsMoved event
+  void fireAtomsMoved();
+
+  void applyTopology();
+  // void calcProt2ndry(real hb_high, boolean bIgnoreBulge);
+  // void calcProt2ndry2(boolean bIgnoreBulge, integer nhgap, real dhangl1, real dhangl2);
+  void calcBasePair(real cutoff, real tilt);
+
+
+  // array access method
+  object<ByteArray$> getCrdArray();
+
+  object<ByteArray$> getPropArray(string propname);
+
+  object<ByteArray$> getSelArray(object<MolSelection$> psel);
+
+};
+
+#endif
+

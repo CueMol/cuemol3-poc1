@@ -1,0 +1,55 @@
+// -*-Mode: C++;-*-
+//
+//  StyleSet scripting interface definition
+//
+
+#ifndef STYLESET_QIF_INCLUDED
+#define STYLESET_QIF_INCLUDED
+
+#include <gfx/AbstractColor.qif>
+
+runtime_class StyleSet
+{
+  client_hdr "StyleSet.hpp";
+  client_name qsys::StyleSet;
+  dllexport QSYS_API;
+
+  scriptable;
+  smartptr;
+
+  //
+  // properties
+  //
+
+  property integer uid => redirect(getUID, xxx) (readonly);
+  property string src => redirect(getSource, XXX) (readonly);
+  property string name => redirect(getName, setName);
+  property boolean readonly => redirect(isReadOnly, setReadOnly);
+  property boolean modified => redirect(isModified, XXX) (readonly);
+
+  // color
+  object<AbstractColor$> getColor(string name);
+  boolean hasColor(string name);
+  boolean setColor(string name, object<AbstractColor$> pCol);
+  boolean removeColor(string name);
+
+  string getColorDefsJSON();
+
+  // string data
+  string getStrData(string cat, string key);
+  boolean hasStrData(string cat, string key);
+  boolean setStrData(string cat, string key, string value);
+  boolean removeStrData(string cat, string key);
+
+  string getStrDataNamesJSON(string cat);
+
+  // style data
+  boolean hasStyle(string name);
+  //boolean setStyle(string name, object<$> pStyle);
+  boolean removeStyle(string name);
+  string getStyleNamesJSON();
+  
+};
+
+#endif
+
