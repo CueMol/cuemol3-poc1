@@ -1,5 +1,5 @@
 {
-  "name": "core",
+  "name": "@cuemol/core",
   "version": "1.0.0",
   "description": "cuemol core package",
   "main": "lib/index.js",

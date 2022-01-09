@@ -1,5 +1,5 @@
 {
-  "name": "simple_cli",
+  "name": "@cuemol/example_simple_cli",
   "version": "1.0.0",
   "description": "Simple Node CLI example",
   "main": "src/index.js",
@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "bindings": "^1.5.0"
+    "bindings": "^1.5.0",
+    "@cuemol/core": "^1.0.0"
   }
 }

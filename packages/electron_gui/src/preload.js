@@ -1,6 +1,6 @@
 const { ipcRenderer } = require('electron');
 const path = require('path');
-const core = require('core');
+const core = require('@cuemol/core');
 console.log('core:', core);
 const { createCueMol } = core;
 

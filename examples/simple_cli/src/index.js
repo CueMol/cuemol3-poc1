@@ -1,5 +1,5 @@
 const path = require('path');
-const core = require('core');
+const core = require('@cuemol/core');
 console.log('core:', core);
 const { createCueMol } = core;
 console.log('createCueMol:', createCueMol);

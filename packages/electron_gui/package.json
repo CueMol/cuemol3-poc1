@@ -1,5 +1,5 @@
 {
-  "name": "electron_gui",
+  "name": "@cuemol/electron_gui",
   "version": "1.0.0",
   "description": "Electron GUI package",
   "main": "src/electron.js",
@@ -12,6 +12,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "electron": "^16.0.6"
+    "@cuemol/core": "^1.0.0"
+  },
+  "devDependencies": {
+    "electron": "^16.0.6",
+    "electron-builder": "^22.14.5"
   }
 }
