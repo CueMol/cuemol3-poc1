@@ -10,8 +10,10 @@ function getModule() {
 exports.getModule = getModule;
 
 exports.getSysConfigPath = function () {
-  const load_path = path.join(__dirname, '..', '..', 'src', 'data', 'sysconfig.xml');
-  console.log('__dirname:', __dirname);
+  console.log('XXX path.resolve:',path.resolve('.'));
+  console.log('XXX __filename:', __filename);
+  console.log('XXX __dirname:', __dirname);
+  const load_path = path.join(__dirname, 'build', 'data', 'sysconfig.xml');
   console.log('load_path:', load_path);
   return load_path;
 }

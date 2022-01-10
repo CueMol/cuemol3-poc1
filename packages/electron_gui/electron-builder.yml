@@ -4,4 +4,4 @@ files:
   - "dist/**/*"
   - "src/**/*"
 electronVersion: 16.0.6
-asar: false
+asar: true

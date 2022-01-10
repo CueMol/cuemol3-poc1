@@ -102,6 +102,7 @@ add_subdirectory(zlib)
 add_subdirectory(qlib)
 add_subdirectory(gfx)
 add_subdirectory(qsys)
+add_subdirectory(data)
 
 if (${BUILD_NODEJS_BINDINGS})
   add_subdirectory(node_jsbr)

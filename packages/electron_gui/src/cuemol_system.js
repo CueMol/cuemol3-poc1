@@ -43,6 +43,7 @@ export class CueMolMgr {
   loadTestPDB(scene, vw) {
     let sceMgr = this.cuemol.getService('SceneManager');
     let path = sceMgr.convPath('%%CONFDIR%%/1CRN.pdb');
+    console.log('loading PDB file:', path);
 
     let cmdMgr = this.cuemol.getService('CmdMgr');
 

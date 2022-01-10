@@ -6,7 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "install": "webpack",
-    "start": "electron ./src/electron.js"
+    "start": "electron ./src/electron.js",
+    "package-mac-dir": "electron-builder --mac --x64 --dir",
+    "package-mac": "electron-builder --mac --x64"
   },
   "keywords": [],
   "author": "",

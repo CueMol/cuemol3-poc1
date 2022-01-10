@@ -1,9 +1,11 @@
 'use strict';
 
 const path = require('path');
-const { app, Menu, BrowserWindow, dialog } = require('electron');
+const { app, Menu, BrowserWindow, dialog, ipcMain } = require('electron');
 const isMac = process.platform === 'darwin';
 console.log(`isMac: ${isMac}`);
+console.log('app.getAppPath():', app.getAppPath());
+console.log('app.getPath(exe):', app.getPath('exe'));
 
 let mainWindow;
 
@@ -80,3 +82,12 @@ const createWindow = () => {
 };
 
 app.whenReady().then(createWindow);
+
+ipcMain.on('apppath', (event, args) => {
+  event.returnValue = {
+    'appPath': app.getAppPath(),
+    'exePath': app.getPath('exe'),
+    'modulePath': app.getPath('module'),
+    'isPackaged': app.isPackaged,
+  };
+});
