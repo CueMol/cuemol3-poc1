@@ -1,5 +1,6 @@
 #include "wrapper.hpp"
 
+#include <qlib/LScrCallBack.hpp>
 #include <qlib/LScriptable.hpp>
 #include <qlib/LVarArgs.hpp>
 #include <qlib/LVariant.hpp>
@@ -193,7 +194,13 @@ Napi::Value Wrapper::invokeMethod(const Napi::CallbackInfo &info)
     size_t i;
 
     for (i = 1; i < nargs; ++i) {
-        if (!Wrapper::napiValueToLVar(env, info[i], largs.at(i - 1))) {
+        // printf("===== 1\n");
+        qlib::LVariant &rvar = largs.at(i - 1);
+        // rvar.dump();
+        bool result = Wrapper::napiValueToLVar(env, info[i], rvar);
+        // rvar.dump();
+        // printf("===== 2\n");
+        if (!result) {
             auto msg = LString::format("call method %s: cannot convert arg %d",
                                        methodname.c_str(), i);
             Napi::Error::New(env, msg.c_str()).ThrowAsJavaScriptException();
@@ -204,10 +211,8 @@ Napi::Value Wrapper::invokeMethod(const Napi::CallbackInfo &info)
     MB_DPRINTLN("invoke method %s nargs=%zu", methodname.c_str(), nargs);
 
     // Invoke method
-
     bool ok = false;
     LString errmsg;
-
     try {
         ok = pScObj->invokeMethod(methodname, largs);
         if (!ok) errmsg = LString::format("call method %s: failed", methodname.c_str());
@@ -280,6 +285,54 @@ Napi::Value Wrapper::lvarToNapiValue(Napi::Env env, qlib::LVariant &variant)
     return env.Null();
 }
 
+class NapiCallBackObj : public qlib::LScrCallBack
+{
+private:
+    Napi::FunctionReference m_funcRef;
+
+public:
+    NapiCallBackObj(Napi::Value value)
+    {
+        auto func = value.As<Napi::Function>();
+        m_funcRef = Napi::Persistent(func);
+        printf("NAPI Callback obj created %p\n", this);
+    }
+
+    virtual ~NapiCallBackObj()
+    {
+        m_funcRef.Unref();
+        printf("NAPI Callback obj deleted %p\n", this);
+    }
+
+    virtual bool invoke(qlib::LVarArgs &args)
+    {
+        printf("NAPI Callback obj %p invoke called\n", this);
+        const int nargs = args.getSize();
+        auto env = m_funcRef.Env();
+        std::vector<napi_value> napi_args(nargs);
+
+        // convert LVariant to NAPI Value
+        for (int i = 0; i < nargs; ++i) {
+            napi_args[i] = Wrapper::lvarToNapiValue(env, args.at(i));
+        }
+
+        try {
+            m_funcRef.Call(napi_args);
+        } catch (...) {
+            printf("Unknown exception occurred in NapiCallBackObj.invoke()\n");
+            return false;
+        }
+
+        return true;
+    }
+
+    virtual LCloneableObject *clone() const
+    {
+        MB_ASSERT(false);
+        return NULL;
+    }
+};
+
 /// convert NAPI value to LVariant
 bool Wrapper::napiValueToLVar(Napi::Env env, Napi::Value value, qlib::LVariant &rvar)
 {
@@ -287,6 +340,7 @@ bool Wrapper::napiValueToLVar(Napi::Env env, Napi::Value value, qlib::LVariant &
         // null
         if (value.IsNull() || value.IsUndefined()) {
             rvar.setNull();
+            // printf("napiValueToLVar conv NULL\n");
             return true;
         }
         // boolean
@@ -306,9 +360,10 @@ bool Wrapper::napiValueToLVar(Napi::Env env, Napi::Value value, qlib::LVariant &
         }
         // function (callable)
         if (value.IsFunction()) {
-            // TODO: impl
-            printf("Napi::Value function not supported\n");
-            return false;
+            auto *pcb = new NapiCallBackObj(value);
+            auto *pcb_ptr = new qlib::LSCBPtr(pcb);
+            rvar.shareObjectPtr(pcb_ptr);
+            return true;
         }
         // array
         if (value.IsArray()) {
@@ -340,7 +395,7 @@ bool Wrapper::napiValueToLVar(Napi::Env env, Napi::Value value, qlib::LVariant &
             }
         }
     } catch (...) {
-        printf("Unknown exception\n");
+        printf("Unknown exception occurred in Wrapper::napiValueToLVar\n");
         return false;
     }
 

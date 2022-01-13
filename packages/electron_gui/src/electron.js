@@ -34,13 +34,13 @@ const template = [
       {
         label: 'Open File...',
         click: () => {
-          console.log('XXX');
+          console.log('Open File clicked...');
           const paths = dialog.showOpenDialogSync(mainWindow, {
             buttonLabel: 'Open',
             filters: [{ name: 'PDB', extensions: ['pdb'] }],
             properties: ['openFile', 'createDirectory'],
           });
-          console.log('XXX', paths);
+          console.log('Open File path:', paths);
           mainWindow.webContents.send('open-file', paths);
         },
       },

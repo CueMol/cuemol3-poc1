@@ -1,6 +1,6 @@
 const path = require('path');
 const _internal = require('bindings')('node_jsbr');
-const { CueMol } = require('./build/javascript/cuemol');
+const { CueMol, EventManager } = require('./build/javascript/cuemol');
 console.log("_internal: ", _internal);
 
 function getModule() {
@@ -10,16 +10,22 @@ function getModule() {
 exports.getModule = getModule;
 
 exports.getSysConfigPath = function () {
-  console.log('XXX path.resolve:',path.resolve('.'));
-  console.log('XXX __filename:', __filename);
-  console.log('XXX __dirname:', __dirname);
+  // console.log('XXX path.resolve:',path.resolve('.'));
+  // console.log('XXX __filename:', __filename);
+  // console.log('XXX __dirname:', __dirname);
   const load_path = path.join(__dirname, 'build', 'data', 'sysconfig.xml');
   console.log('load_path:', load_path);
   return load_path;
-}
+};
+
+let cuemol = null;
 
 exports.createCueMol = function (sysconfig_path) {
-  const cuemol = new CueMol({internal: _internal});
+  if (cuemol) {
+    console.log('cuemol already created');
+    return cuemol;
+  }
+  cuemol = new CueMol({internal: _internal});
   if (!sysconfig_path) {
     cuemol.initCueMol(exports.getSysConfigPath());
   }
@@ -27,4 +33,21 @@ exports.createCueMol = function (sysconfig_path) {
     cuemol.initCueMol(sysconfig_path);
   }
   return cuemol;
-}
+};
+
+let event_manager = null;
+
+exports.getEventManager = function() {
+  if (cuemol === null) {
+    console.log('cuemol not created');
+    return null;
+  }
+  if (event_manager) {
+    return event_manager;
+  }
+  else {
+    event_manager = new EventManager(cuemol);
+    return event_manager;
+  }
+};
+

@@ -8,6 +8,19 @@ const ipcRenderer = window.myAPI.ipcRenderer;
 console.log('ipcRenderer:', ipcRenderer);
 let fpsElem;
 
+const handler = function ({obj}) {
+  const msg = obj.content;
+  console.log('log event called:', msg);
+};
+
+const evtmgr = window.myAPI.event_manager;
+evtmgr.addListener("log",
+				   -1, //evtmgr.SEM_ANY, // source type
+				   -1, // evtmgr.SEM_ANY, // event type
+				   -1, // evtmgr.SEM_ANY, // source uid
+				   handler);
+
+
 function adjustCanvasSize2(mgr, canvas, dpr) {
   const { width, height } = canvas.getBoundingClientRect();
   console.log(`canvas resize: ${width} x ${height}`);
@@ -18,6 +31,8 @@ function adjustCanvasSize2(mgr, canvas, dpr) {
 
 window.addEventListener('load', () => {
   console.log('onLoad() called!!');
+
+  mgr.loadTestPDB(mgr._view.getScene(), mgr._view);
 
   const canvas = document.getElementById('canvas_area');
   const devicePixelRatio = window.devicePixelRatio || 1;
@@ -35,6 +50,7 @@ window.addEventListener('load', () => {
   /////
 
   fpsElem = document.getElementById('fps');
+  window.requestAnimationFrame(timer_update_canvas);
 });
 
 let then = 0;
@@ -52,7 +68,6 @@ let timer_update_canvas = (timestamp) => {
   window.requestAnimationFrame(timer_update_canvas);
 };
 
-window.requestAnimationFrame(timer_update_canvas);
 
 if (ipcRenderer) {
   ipcRenderer.on('open-file', (event, message) => {

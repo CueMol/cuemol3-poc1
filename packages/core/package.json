@@ -4,7 +4,7 @@
   "description": "cuemol core package",
   "main": "lib/index.js",
   "scripts": {
-    "install": "cmake-js compile --directory ../.. --out ./build && webpack",
+    "install": "cmake-js build --directory ../.. --out ./build && webpack",
     "build": "cmake-js build --directory ../.. --out ./build && webpack",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

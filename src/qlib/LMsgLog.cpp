@@ -6,44 +6,43 @@
 #include <common.h>
 
 #include "LMsgLog.hpp"
+
 #include "LLogEvent.hpp"
-#include "LVarArgs.hpp"
 #include "LScrCallBack.hpp"
 #include "LUnicode.hpp"
+#include "LVarArgs.hpp"
 
 #ifdef WIN32
-#  include <windows.h>
+#include <windows.h>
 #endif
 
 #include "MthrEventCaster.hpp"
 
 namespace qlib {
 
-  class LLogEventCaster
-    : public LMthrEventCaster<LLogEvent, LLogEventListener>
-  {
+class LLogEventCaster : public LMthrEventCaster<LLogEvent, LLogEventListener>
+{
     virtual void execute(LLogEvent &ev, LLogEventListener *p)
     {
-      p->logAppended(ev);
+        printf("LogEvent exec %p\n", p);
+        p->logAppended(ev);
     }
-  };
-  
-  class LMsgLogImpl
-  {
-  public:
-      LString m_filepath;
-      FILE *m_fp;
-      LLogEventCaster m_evcaster;
-      LString m_accumMsg;
-      bool m_bAccumMsg;
-  };
-}
+};
+
+class LMsgLogImpl
+{
+public:
+    LString m_filepath;
+    FILE *m_fp;
+    LLogEventCaster m_evcaster;
+    LString m_accumMsg;
+    bool m_bAccumMsg;
+};
+}  // namespace qlib
 
 using namespace qlib;
 
-
-LMsgLog::LMsgLog()
-    : m_pImpl( new LMsgLogImpl() )
+LMsgLog::LMsgLog() : m_pImpl(new LMsgLogImpl())
 {
     // printf("LMsgLog::LMsgLog()\n");
     resetOutput();
@@ -54,25 +53,23 @@ LMsgLog::LMsgLog()
 void LMsgLog::resetOutput()
 {
 #if defined(WIN32)
-  HANDLE hStdErr = GetStdHandle(STD_ERROR_HANDLE);
-  //printf("hStdErr=%p\n", hStdErr);
-  if (hStdErr) {
-    // has console --> output to stderr
-    m_pImpl->m_fp = stderr;
-  }
-  else {
-    m_pImpl->m_fp = NULL;
-  }
+    HANDLE hStdErr = GetStdHandle(STD_ERROR_HANDLE);
+    // printf("hStdErr=%p\n", hStdErr);
+    if (hStdErr) {
+        // has console --> output to stderr
+        m_pImpl->m_fp = stderr;
+    } else {
+        m_pImpl->m_fp = NULL;
+    }
 #else
-  // posix: Always write msgs to stderr
-  m_pImpl->m_fp = stderr;
+    // posix: Always write msgs to stderr
+    m_pImpl->m_fp = stderr;
 #endif
-
 }
 
 LMsgLog::~LMsgLog()
 {
-  delete m_pImpl;
+    delete m_pImpl;
 }
 
 void LMsgLog::init()
@@ -84,8 +81,8 @@ void LMsgLog::init()
 
 void LMsgLog::fini()
 {
-  delete s_pLog;
-  s_pLog = NULL;
+    delete s_pLog;
+    s_pLog = NULL;
 }
 
 LMsgLog *LMsgLog::s_pLog;
@@ -94,31 +91,29 @@ LMsgLog *LMsgLog::s_pLog;
 
 void LMsgLog::setRedirect(FILE *fp)
 {
-  m_pImpl->m_fp = fp;
+    m_pImpl->m_fp = fp;
 }
 
 void LMsgLog::setFileRedirPath(const LString &path)
 {
-  // close the current stream
-  if (!m_pImpl->m_filepath.isEmpty() && m_pImpl->m_fp)
-    ::fclose(m_pImpl->m_fp);
-  m_pImpl->m_filepath = "";
+    // close the current stream
+    if (!m_pImpl->m_filepath.isEmpty() && m_pImpl->m_fp) ::fclose(m_pImpl->m_fp);
+    m_pImpl->m_filepath = "";
 
-  if (path.isEmpty()) {
-    // reset to default
-    resetOutput();
-    return;
-  }
-  else {
+    if (path.isEmpty()) {
+        // reset to default
+        resetOutput();
+        return;
+    } else {
 #ifdef _WIN32
-    m_pImpl->m_fp = qlib::fopen_utf8(path.c_str(), "wb");
+        m_pImpl->m_fp = qlib::fopen_utf8(path.c_str(), "wb");
 #else
-    m_pImpl->m_fp = qlib::fopen_utf8(path.c_str(), "w");
+        m_pImpl->m_fp = qlib::fopen_utf8(path.c_str(), "w");
 #endif
-    if (m_pImpl->m_fp==NULL) {
-      MB_THROW(IOException, ("Cannot open file:"+path));
+        if (m_pImpl->m_fp == NULL) {
+            MB_THROW(IOException, ("Cannot open file:" + path));
+        }
     }
-  }    
 }
 
 LString LMsgLog::getFileRedirPath() const
@@ -128,58 +123,51 @@ LString LMsgLog::getFileRedirPath() const
 
 int LMsgLog::addListener(LLogEventListener *plsn)
 {
-    return 0;
-    // return m_pImpl->m_evcaster.add(plsn);
+    return m_pImpl->m_evcaster.add(plsn);
 }
 
 bool LMsgLog::removeListener(int nid)
 {
-  // if (m_pImpl->m_evcaster.remove(nid)==NULL)
-  //   return false;
-  return true;
+    if (m_pImpl->m_evcaster.remove(nid)==NULL)
+        return false;
 }
 
-void LMsgLog::writeLog(int nlev, const char *msg, bool bNL /*=false*/ )
+void LMsgLog::writeLog(int nlev, const char *msg, bool bNL /*=false*/)
 {
-  if (m_pImpl->m_fp) {
-    fputs(msg, m_pImpl->m_fp);
-    if (bNL)
-      fputc('\n', m_pImpl->m_fp);
-    fflush(m_pImpl->m_fp);
-  }
+    if (m_pImpl->m_fp) {
+        fputs(msg, m_pImpl->m_fp);
+        if (bNL) fputc('\n', m_pImpl->m_fp);
+        fflush(m_pImpl->m_fp);
+    }
 
 #ifdef WIN32
-  OutputDebugStringA(msg);
-  if (bNL)
-    OutputDebugStringA("\n");
+    OutputDebugStringA(msg);
+    if (bNL) OutputDebugStringA("\n");
 #endif
 
-  if (nlev>LMsgLog::DL_WARN) return;
+    if (nlev > LMsgLog::DL_WARN) return;
 
-  if (m_pImpl->m_bAccumMsg) {
-    m_pImpl->m_accumMsg += msg;
-    if (bNL)
-      m_pImpl->m_accumMsg += "\n";
-    return;
-  }
-  
-  // prevent the re-entrance
-  if (m_pImpl->m_evcaster.isLocked())
-    return;
+    if (m_pImpl->m_bAccumMsg) {
+        m_pImpl->m_accumMsg += msg;
+        if (bNL) m_pImpl->m_accumMsg += "\n";
+        return;
+    }
 
-  LLogEvent evt(nlev, bNL, msg);
-  m_pImpl->m_evcaster.lockedFire(evt);
+    // prevent the re-entrance
+    if (m_pImpl->m_evcaster.isLocked()) return;
+
+    LLogEvent evt(nlev, bNL, msg);
+    m_pImpl->m_evcaster.lockedFire(evt);
+    printf("writeLog event send to %d listeners\n", m_pImpl->m_evcaster.getSize());
 }
 
 LString LMsgLog::getAccumMsg() const
 {
-  return m_pImpl->m_accumMsg;
+    return m_pImpl->m_accumMsg;
 }
-
 
 void LMsgLog::removeAccumMsg()
 {
-  m_pImpl->m_accumMsg = "";
-  m_pImpl->m_bAccumMsg = false;
+    m_pImpl->m_accumMsg = "";
+    m_pImpl->m_bAccumMsg = false;
 }
-

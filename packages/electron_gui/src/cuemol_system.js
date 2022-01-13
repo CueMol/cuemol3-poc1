@@ -1,4 +1,3 @@
-// import { CueMol } from '../build/javascript/cuemol.js';
 
 export class CueMolMgr {
   constructor(myAPI) {
@@ -12,10 +11,8 @@ export class CueMolMgr {
     // for VBOs
     this._draw_data = {};
 
-    // initialize cuemol API
-    // this.cuemol = new CueMol(myAPI);
-    // this.cuemol.initCueMol('./src/data/sysconfig.xml');
     this.cuemol = myAPI.cuemol;
+
     let sceMgr = this.cuemol.getService('SceneManager');
     let scene = sceMgr.createScene();
     scene.setName('Test Scene');
@@ -26,7 +23,7 @@ export class CueMolMgr {
     this._view = vw;
 
     // this.loadTestRend(scene, vw);
-    this.loadTestPDB(scene, vw);
+    // this.loadTestPDB(scene, vw);
   }
 
   loadTestRend(scene, vw) {
@@ -218,11 +215,12 @@ export class CueMolMgr {
 
   deleteShader(shader_name) {
     const gl = this._context;
-    if (!name in this._prog_data) {
-      console.log(`name ${name} not defined`);
+    if (!shader_name in this._prog_data) {
+      console.log(`name ${shader_name} not defined`);
       return false;
     }
     gl.deleteProgram(this._prog_data[shader_name]);
+    return true;
   }
 
   enableShader(shader_name) {

@@ -37,8 +37,8 @@ public:
     Napi::Value setProp(const Napi::CallbackInfo &info);
     Napi::Value invokeMethod(const Napi::CallbackInfo &info);
 
-    Napi::Value lvarToNapiValue(Napi::Env env, qlib::LVariant &variant);
-    bool napiValueToLVar(Napi::Env env, Napi::Value napi_val, qlib::LVariant &rvar);
+    static Napi::Value lvarToNapiValue(Napi::Env env, qlib::LVariant &variant);
+    static bool napiValueToLVar(Napi::Env env, Napi::Value napi_val, qlib::LVariant &rvar);
 
     static Napi::Object Init(Napi::Env env, Napi::Object exports);
 

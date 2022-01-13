@@ -2,7 +2,7 @@ const { ipcRenderer } = require('electron');
 const path = require('path');
 const core = require('@cuemol/core');
 console.log('core:', core);
-const { createCueMol, getSysConfigPath } = core;
+const { createCueMol, getEventManager } = core;
 
 console.log('createCueMol:', createCueMol);
 console.log('ipcRenderer:', ipcRenderer);
@@ -23,8 +23,13 @@ else {
 }
 console.log('load_path:', load_path);
 const cuemol = createCueMol(load_path);
+const evt_mgr = getEventManager();
+
+const msglog = cuemol.getService('MsgLog');
+msglog.removeAccumMsg();
 
 window.myAPI = {
   ipcRenderer: ipcRenderer,
   cuemol: cuemol,
+  event_manager: evt_mgr,
 };

@@ -6,7 +6,10 @@
 
 namespace node_jsbr {
 
-ElecView::ElecView() : m_pCtxt(new ElecDisplayContext()) {}
+ElecView::ElecView() : m_bBound(false), m_pCtxt(new ElecDisplayContext())
+{
+    printf("=== ElecView created (%p) ===\n", this);
+}
 
 ElecView::ElecView(const ElecView &r) {}
 
@@ -29,6 +32,11 @@ void ElecView::setUpModelMat(int nid)
 {
     super_t::setUpModelMat(nid);
 
+    if (!m_bBound) {
+        printf("ElecView::setUpModelMat> ElecView is not bound.\n");
+        return;
+    }
+
     auto peer = m_peerObjRef.Value();
     auto env = peer.Env();
     auto method = peer.Get("setUpModelMat").As<Napi::Function>();
@@ -42,6 +50,11 @@ void ElecView::setUpProjMat(int cx, int cy)
 {
     super_t::setUpProjMat(cx, cy);
 
+    if (!m_bBound) {
+        printf("ElecView::setUpModelMat> ElecView is not bound.\n");
+        return;
+    }
+
     // TODO: impl
     // glFogf(GL_FOG_START, (GLfloat)fognear);
     // glFogf(GL_FOG_END, (GLfloat)fogfar);
@@ -50,12 +63,17 @@ void ElecView::setUpProjMat(int cx, int cy)
     float *pbuf = &m_projMat.ai(1);
 
     constexpr size_t buf_size = 4 * 4;
-    auto peer = m_peerObjRef.Value();
-    auto env = peer.Env();
-    auto method = peer.Get("setUpProjMat").As<Napi::Function>();
-    method.Call(peer, {Napi::Number::New(env, m_bcx), Napi::Number::New(env, m_bcy),
-                       m_projArrayBuf.Value()});
-
+    try {
+        auto peer = m_peerObjRef.Value();
+        auto env = peer.Env();
+        auto method = peer.Get("setUpProjMat").As<Napi::Function>();
+        method.Call(peer, {Napi::Number::New(env, m_bcx), Napi::Number::New(env, m_bcy),
+                           m_projArrayBuf.Value()});
+    } catch (const Napi::Error &e) {
+        printf("=== Call jsmethod setUpProjMat failed. ===\n");
+    } catch (...) {
+        printf("=== Call jsmethod setUpProjMat failed. ===\n");
+    }
     resetProjChgFlag();
 
     // printf("setUpProjMat OK\n");
@@ -89,6 +107,21 @@ void ElecView::drawScene()
     }
 }
 
+void ElecView::clear(const gfx::ColorPtr &col)
+{
+    if (!m_bBound) {
+        printf("ElecView::setUpModelMat> ElecView is not bound.\n");
+        return;
+    }
+
+    auto peer = m_peerObjRef.Value();
+    auto env = peer.Env();
+    auto method = peer.Get("clear").As<Napi::Function>();
+    method.Call(peer,
+                {Napi::Number::New(env, col->fr()), Napi::Number::New(env, col->fg()),
+                 Napi::Number::New(env, col->fb())});
+}
+
 void ElecView::bindPeer(Napi::Object peer)
 {
     printf("ElecView::bindPeer called\n");
@@ -117,20 +150,11 @@ void ElecView::bindPeer(Napi::Object peer)
     }
 
     // init();
+    m_bBound = true;
 
     setUpProjMat(-1, -1);
     // setUpLightColor();
     m_pCtxt->init(this);
-}
-
-void ElecView::clear(const gfx::ColorPtr &col)
-{
-    auto peer = m_peerObjRef.Value();
-    auto env = peer.Env();
-    auto method = peer.Get("clear").As<Napi::Function>();
-    method.Call(peer,
-                {Napi::Number::New(env, col->fr()), Napi::Number::New(env, col->fg()),
-                 Napi::Number::New(env, col->fb())});
 }
 
 void registerViewFactory()

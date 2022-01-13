@@ -94,9 +94,10 @@ add_custom_command(
 # XXX: copy to deploy dir
 add_custom_command(
   TARGET node_jsbr_copy PRE_BUILD
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/data/shaders
   COMMAND ${CMAKE_COMMAND} -E copy
   ${CMAKE_CURRENT_SOURCE_DIR}/shaders/*
-  ${CMAKE_SOURCE_DIR}/src/data/shaders
+  ${CMAKE_BINARY_DIR}/data/shaders
   )
 
 add_dependencies(node_jsbr node_jsbr_copy)

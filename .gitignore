@@ -104,3 +104,4 @@ venv.bak/
 *_loader.cpp
 
 node_modules/
+.DS_Store

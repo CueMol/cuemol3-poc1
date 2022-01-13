@@ -347,11 +347,18 @@ sub makeMthArg($)
   foreach my $arg (@{$args}) {
     my $arg_type = $arg->{"type"};
     if ($arg_type eq "object") {
-        if ($use_es6_mod) {
-            push(@rval, "arg_${ind}.wrapped");
+        if ($arg->{"qif"} eq "LScrCallBack") {
+            # Callback (function) object
+            # --> no conversion
+            push(@rval, "arg_$ind");
         }
         else {
-            push(@rval, "arg_${ind}._wrapped");
+            if ($use_es6_mod) {
+                push(@rval, "arg_${ind}.wrapped");
+            }
+            else {
+                push(@rval, "arg_${ind}._wrapped");
+            }
         }
     }
     else {
@@ -385,20 +392,20 @@ sub makeMthArg($)
 #   return "\"$name\"" . ", [" . join(", ", @rval) . "]";
 # }
 
-# sub checkCallbackReg($)
-# {
-#   my $mth = shift;
-#   my $args = $mth->{"args"};
-#   my $name = $mth->{"name"};
+sub checkCallbackReg($)
+{
+  my $mth = shift;
+  my $args = $mth->{"args"};
+  my $name = $mth->{"name"};
 
-#   return 0 if (!defined($args->[0]));
-#   my $arg = $args->[0];
+  return 0 if (!defined($args->[0]));
+  my $arg = $args->[0];
 
-#   return 0 if ($arg->{"type"} ne "object");
+  return 0 if ($arg->{"type"} ne "object");
 
-#   return 1 if ($arg->{"qif"} eq "LScrCallBack");
-#   return 0;
-# }
+  return 1 if ($arg->{"qif"} eq "LScrCallBack");
+  return 0;
+}
 
 sub genJsES6ImplData($$)
 {

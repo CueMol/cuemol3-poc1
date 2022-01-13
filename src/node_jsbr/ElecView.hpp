@@ -18,6 +18,8 @@ class ElecView : public qsys::EsView
     using super_t = qsys::EsView;
 
 private:
+    bool m_bBound;
+
     ElecDisplayContext *m_pCtxt;
 
     /// JS-side WebGL display manager
