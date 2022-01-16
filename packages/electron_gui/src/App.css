@@ -32,8 +32,3 @@
     gap: 0;
 }
 
-.bottomContainer {
-    flex-grow: 0;
-    background: yellowgreen;
-    border: 1px solid red;
-}

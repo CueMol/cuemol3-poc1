@@ -1,7 +1,9 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useContext } from 'react';
 import ReactDOM from 'react-dom';
 import styles from './MolView.css';
 import { CueMolMgr } from './cuemol_system';
+import { MgrContext } from "./App.jsx";
+
 const mgr = new CueMolMgr(window.myAPI);
 console.log('CueMolMgr instance:', mgr);
 
@@ -33,6 +35,10 @@ function drawArc(canvas) {
 export function MolView() {
   const canvasRef = useRef(null);
   const placeRef = useRef(null);
+  const { mgrRef } = useContext(MgrContext);
+
+  console.log('MgrContext:', MgrContext);
+  console.log('MolView mgrRef:', mgrRef);
 
   useEffect(() => {
     const dpr = window.devicePixelRatio || 1;
@@ -53,6 +59,7 @@ export function MolView() {
     mgr.bindCanvas(canvasRef.current);
     mgr.loadTestPDB(mgr._view.getScene(), mgr._view);
     mgr.updateDisplay();
+    mgrRef.current = mgr;
   }, []);
 
   return (
