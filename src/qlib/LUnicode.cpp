@@ -194,10 +194,13 @@ FILE *qlib::fopen_utf8(const LString &utf8name, const LString &utf8mode)
   delete [] pwcs;
   delete [] wcsmode;
 #else
-  // TO DO: correct implementation!!
+  // TODO: correct implementation!!
   fp = fopen(utf8name.c_str(), utf8mode.c_str());
-  printf("fopen(%s, %s)=%p\n", utf8name.c_str(), utf8mode.c_str(), fp);
 #endif
+
+  if (fp == nullptr) {
+      printf("fopen(%s, %s)=%p\n", utf8name.c_str(), utf8mode.c_str(), fp);
+  }
 
   return fp;
 }

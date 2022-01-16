@@ -76,7 +76,7 @@ const createWindow = () => {
     mainWindow = null;
   });
 
-  mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools({mode: 'undocked'});
 
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 };
