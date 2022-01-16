@@ -25,9 +25,6 @@ console.log('load_path:', load_path);
 const cuemol = createCueMol(load_path);
 const evt_mgr = getEventManager();
 
-const msglog = cuemol.getService('MsgLog');
-msglog.removeAccumMsg();
-
 window.myAPI = {
   ipcRenderer: ipcRenderer,
   cuemol: cuemol,
