@@ -158,7 +158,7 @@ void LMsgLog::writeLog(int nlev, const char *msg, bool bNL /*=false*/)
 
     LLogEvent evt(nlev, bNL, msg);
     m_pImpl->m_evcaster.lockedFire(evt);
-    printf("writeLog event send to %d listeners\n", m_pImpl->m_evcaster.getSize());
+    // printf("writeLog event send to %d listeners\n", m_pImpl->m_evcaster.getSize());
 }
 
 LString LMsgLog::getAccumMsg() const
