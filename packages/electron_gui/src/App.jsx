@@ -5,6 +5,8 @@ import { SidePanel } from './SidePanel.jsx';
 import { MolView } from './MolView.jsx';
 import { LogView } from './LogView.jsx';
 
+import Button from '@mui/material/Button';
+
 const { ipcRenderer } = window.myAPI;
 export const MgrContext = React.createContext();
 
@@ -52,12 +54,12 @@ export function App() {
     <MgrContext.Provider value={{ mgrRef }}>
 
       <div className={styles.content}>
-        <div className={styles.menuContainer}>Menu</div>
+        <div className={styles.menuContainer}>
+          <Button variant="contained">Menu</Button>
+        </div>
         <div className={styles.appContainer}>
           
           <div className={styles.sidePanelContainer}>
-            <SidePanel />
-            <SidePanel />
             <SidePanel />
           </div>
           <div id="placeholder" className={styles.mainContainer}>
