@@ -1,9 +1,10 @@
 .place {
     background: black;
-    flex: 1 1 0px;
     padding: 0px;
     margin: 0px;
     border: 0px;
+    height: 100%;
+    width: 100%;
 }
 
 .molView {
@@ -11,6 +12,6 @@
     padding: 0px;
     margin: 0px;
     border: 0px;
-
-    position: absolute;
+    height: 100%;
+    width: 100%;
 }

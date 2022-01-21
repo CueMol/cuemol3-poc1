@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useContext } from 'react';
+import React, { useRef, useEffect, useLayoutEffect, useContext } from 'react';
 import ReactDOM from 'react-dom';
 import styles from './MolView.css';
 import { CueMolMgr } from './cuemol_system';
@@ -18,8 +18,8 @@ function adjustCanvasSize(mgr, canvasRef, placeRef, dpr) {
   console.log(`canvas : ${canvas.width} x ${canvas.height}`);
   // canvas.style.top = '0px';
   // canvas.style.left = '0px';
-  canvas.style.width = `${width}px`;
-  canvas.style.height = `${height}px`;
+  // canvas.style.width = `${width}px`;
+  // canvas.style.height = `${height}px`;
   canvas.width = width * dpr;
   canvas.height = height * dpr;
   mgr.resized(width, height);
@@ -37,9 +37,6 @@ export function MolView() {
   const placeRef = useRef(null);
   const { mgrRef } = useContext(MgrContext);
 
-  console.log('MgrContext:', MgrContext);
-  console.log('MolView mgrRef:', mgrRef);
-
   useEffect(() => {
     const dpr = window.devicePixelRatio || 1;
     const resizeObserver = new ResizeObserver((entries) => {
@@ -55,8 +52,9 @@ export function MolView() {
     };
   }, []);
   
-  useEffect(() => {
+  useLayoutEffect(() => {
     mgr.bindCanvas(canvasRef.current);
+    // TODO: move to elsewhere??
     mgr.loadTestPDB(mgr._view.getScene(), mgr._view);
     mgr.updateDisplay();
     mgrRef.current = mgr;

@@ -25,10 +25,5 @@
 
 .mainContainer {
     padding: 0px;
-    flex-grow: 1;
     background: yellow;
-    display: flex;
-    flex-direction: column;
-    gap: 0;
 }
-

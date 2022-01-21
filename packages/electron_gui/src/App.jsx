@@ -4,6 +4,8 @@ import styles from './App.css';
 import { SidePanel } from './SidePanel.jsx';
 import { MolView } from './MolView.jsx';
 import { LogView } from './LogView.jsx';
+import { Allotment } from "allotment";
+import "allotment/dist/style.css";
 
 const { ipcRenderer } = window.myAPI;
 export const MgrContext = React.createContext();
@@ -11,7 +13,7 @@ export const MgrContext = React.createContext();
 export function App() {
 
   const mgrRef = useRef(null);
-  console.log('App mgrRef:', mgrRef);
+  console.log('App mgrRef:', mgrRef.current);
 
   useEffect(() => {
     function onOpenFile(event, message) {
@@ -49,25 +51,24 @@ export function App() {
   }, []);
 
   return (
-    <MgrContext.Provider value={{ mgrRef }}>
 
+    <MgrContext.Provider value={{ mgrRef }}>
       <div className={styles.content}>
         <div className={styles.menuContainer}>Menu</div>
         <div className={styles.appContainer}>
-          
-          <div className={styles.sidePanelContainer}>
-            <SidePanel />
-            <SidePanel />
-            <SidePanel />
-          </div>
-          <div id="placeholder" className={styles.mainContainer}>
-            <MolView />
-            <LogView />
-          </div>
-          
+          <Allotment defaultSizes={[1, 4]}>
+            <Allotment.Pane snap>
+              <SidePanel />
+            </Allotment.Pane>
+            <Allotment.Pane>
+              <Allotment vertical defaultSizes={[5, 1]}>
+                <MolView />
+                <LogView />
+              </Allotment>
+            </Allotment.Pane>
+          </Allotment>
         </div>
         <div className={styles.statusContainer}>Status</div>
-        
       </div>
     </MgrContext.Provider>
   );
