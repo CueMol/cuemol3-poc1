@@ -6,7 +6,7 @@ import { LogView } from './LogView.jsx';
 import { Allotment } from "allotment";
 import "allotment/dist/style.css";
 import { useMolView } from './use_molview.jsx';
-import { getSceneByViewID } from './utils';
+import { getSceneByViewID, openPDBFile, updateView } from './utils';
 
 const { cuemol, ipcRenderer } = window.myAPI;
 
@@ -19,24 +19,9 @@ export function App() {
     function onOpenFile(_, message) {
       console.log('ipcRenderer.on: ', message);
       const scene = getSceneByViewID(cuemol, molViewID);
-      
       let file_path = message[0];
-      let cmdMgr = cuemol.getService('CmdMgr');
-      
-      let load_object = cmdMgr.getCmd('load_object');
-      load_object.target_scene = scene;
-      load_object.file_path = file_path;
-      load_object.run();
-      let mol = load_object.result_object;
-      
-      let new_rend = cmdMgr.getCmd('new_renderer');
-      new_rend.target_object = mol;
-      new_rend.renderer_type = 'simple';
-      new_rend.renderer_name = 'simple1';
-      new_rend.recenter_view = true;
-      new_rend.default_style_name = 'DefaultCPKColoring';
-      new_rend.run();
-      // mgr.updateDisplay();
+      openPDBFile(cuemol, scene, file_path);
+      updateView(cuemol, molViewID);
     }
     ipcRenderer.on('open-file', onOpenFile);
 
