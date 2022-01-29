@@ -1,204 +1,102 @@
-import React, { useState, useContext, useEffect } from 'react';
-import ReactDOM from 'react-dom';
+import React, { useState, useEffect, useLayoutEffect } from 'react';
 import styles from './SidePanel.css';
-// import { Tree } from '@minoru/react-dnd-treeview';
-import { UncontrolledTreeEnvironment, ControlledTreeEnvironment, Tree, StaticTreeDataProvider } from 'react-complex-tree';
 import 'react-complex-tree/lib/style.css';
-
-const defaultTree = {'root': {
-  index: 'root',
-  canMove: false,
-  hasChildren: true,
-  children: ['1', '2'],
-  data: 'root',
-  canRename: false,
-}, '1': {
-  index: '1',
-  canMove: false,
-  hasChildren: false,
-  children: undefined,
-  data: 'Empty scene',
-  canRename: false,
-}};
-
-const defaultTree2 = {'root': {
-  index: 'root',
-  canMove: false,
-  hasChildren: true,
-  children: ['1', '2'],
-  data: 'root',
-  canRename: false,
-}, '1': {
-  index: '1',
-  canMove: false,
-  hasChildren: false,
-  children: undefined,
-  data: 'Updated scene',
-  canRename: false,
-}, '2': {
-  index: '2',
-  canMove: false,
-  hasChildren: false,
-  children: undefined,
-  data: 'Updated scene 2',
-  canRename: false,
-}};
-
-
-const convTree = (data) => {
-  let result = {};
-  const nlen = data.length;
-  // scene
-  const scene = data[0];
-  result[scene.ID.toString()] = {
-    index: scene.ID.toString(),
-    canMove: false,
-    hasChildren: false,
-    children: undefined,
-    data: scene.name,
-    canRename: false,
-  };
-
-  // objects and renderers
-  let objItems = [];
-  for (let i=1; i<nlen; ++i) {
-    const obj = data[i];
-
-    let rendInds = [];
-    if (obj.rends && obj.rends.length>0) {
-      const njlen = obj.rends.length;
-      for (let j=0; j<njlen; ++j) {
-        let rend = obj.rends[j];
-        result[rend.ID.toString()] = {
-          index: rend.ID.toString(),
-          canMove: false,
-          hasChildren: false,
-          children: undefined,
-          data: rend.name,
-          canRename: false,
-        };
-
-        rendInds.push(rend.ID.toString());
-      }
-    }
-
-    result[obj.ID.toString()] = {
-      index: obj.ID.toString(),
-      canMove: false,
-      hasChildren: rendInds.length>0?true:false,
-      children: rendInds.length>0?rendInds:undefined,
-      data: obj.name,
-      canRename: false,
-    };
-    objItems.push(obj.ID.toString());
-  }
-  
-  result['root'] = {
-    index: 'root',
-    canMove: false,
-    hasChildren: true,
-    children: [scene.ID.toString(), ...objItems],
-    data: 'root',
-    canRename: false,
-  };
-
-  console.log('conv result:', result);
-  return result;
-};
+import { useMolView } from './use_molview.jsx';
+import { SceneTree, defaultTree, createSceneTreeByViewID } from './SceneTree.jsx';
+import { getSceneByViewID } from './utils';
 
 const { cuemol, event_manager } = window.myAPI;
-import { MgrContext } from "./App.jsx";
 
-const getSceneTree = (mgr) => {
-  if (mgr) {
-    const scene = mgr._view.getScene();
-    const json_str = scene.getSceneDataJSON();
-    const data = JSON.parse(json_str);
-    console.log('*** scene: ', data);
-    // setTreeData(defaultTree);
-    return convTree(data);
-  }
-  else {
-    console.log('*** mgr is null');
-    return null;
-  }
+function useSceneEvent(callback, view_id) {
+  useEffect(() => {
+    if (view_id === null) {
+      console.log('UseSceneEvent skip:', view_id);
+      return null;
+    }
+
+    const scene_id = getSceneByViewID(cuemol, view_id).uid;
+    const cbid = event_manager.addListener(
+      "",
+      event_manager.SEM_SCENE|
+        event_manager.SEM_OBJECT|
+        event_manager.SEM_RENDERER|
+        event_manager.SEM_CAMERA|
+        event_manager.SEM_STYLE, // source type
+      event_manager.SEM_ANY, // event type
+      scene_id, // source UID
+      callback);
+    console.log('UseSceneEvent addListerner:', cbid, scene_id);
+    return () => {
+      console.log('UseSceneEvent removeListerner:', cbid);
+	  event_manager.removeListener(cbid);
+    };
+  }, [view_id]);
+}
+
+const updateTreeByViewID = (view_id, setter_fn) => {
+  if (view_id === null) return;
+  // console.log('SidePanel useLayoutEffect molViewID', molViewID);
+  const tree = createSceneTreeByViewID(cuemol, view_id);
+  if (tree === null) return;
+  setter_fn(tree);
 };
 
 export function SidePanel() {
-  const { mgrRef } = useContext(MgrContext);
+  const { molViewID } = useMolView();
   const [ treeData, setTreeData ] = useState(defaultTree);
 
-  const [focusedItem, setFocusedItem] = useState();
-  const [expandedItems, setExpandedItems] = useState([]);
-  const [selectedItems, setSelectedItems] = useState([]);
+  useLayoutEffect(() => {
+    updateTreeByViewID(molViewID, setTreeData);
+  }, [molViewID]);
 
-  useEffect(() => {
-    setTreeData( getSceneTree(mgrRef.current) );
-  }, []);
-  
-  const updateTree = () => {
-    // setTreeData(defaultTree2);
-    setTreeData( getSceneTree(mgrRef.current) );
-    console.log('update tree called');
-  };
+  useSceneEvent( (args) => {
+    console.log('scene event handler called', args);
+    switch (args.evtType) {
+    case event_manager.SEM_ADDED:
+      updateTreeByViewID(molViewID, setTreeData);
+      // updateTreeByScene(mgrRef.current, setTreeData);
+      console.log('SEM_ADDED update tree called');
+      break;
+    case event_manager.SEM_REMOVING:
+      updateTreeByViewID(molViewID, setTreeData);
+      // updateTreeByScene(mgrRef.current, setTreeData);
+      console.log('SEM_REMOVING update tree called');
+      break;
+    case event_manager.SEM_CHANGED:
+      if (args.method==="sceneAllCleared" ||
+          args.method==="sceneLoaded") {
+          console.log('SEM_CHANGED update tree called');
+        updateTreeByViewID(molViewID, setTreeData);
+        // updateTreeByScene(mgrRef.current, setTreeData);
+      }
+      break;  
+    case event_manager.SEM_PROPCHG:
+      if ("propname" in args.obj) {
+        const pnm = args.obj.propname;
+        if (pnm==="name" /*|| pnm==="visible" || pnm==="locked"*/) {
+          updateTreeByViewID(molViewID, setTreeData);
+          // updateTreeByScene(mgrRef.current, setTreeData);
+          console.log('SEM_PROPCHG update tree called');
+        }
+        else if (pnm=="group") {
+          // Group changed
+          //  --> tree structure can be changed, so we update all contents.
+          updateTreeByViewID(molViewID, setTreeData);
+          // updateTreeByScene(mgrRef.current, setTreeData);
+          console.log('SEM_PROPCHG update tree called');
+        }
+      }
+    }
+  }, molViewID);
 
   return (
     <div className={styles.sidePanel}>
-      <button onClick={updateTree}>Update</button>
-      <ControlledTreeEnvironment
-        items={treeData} getItemTitle={item => item.data}
-        viewState={{
-          ['tree-1']: {
-            focusedItem,
-            expandedItems,
-            selectedItems,
-          },
-        }}
-        onFocusItem={item => setFocusedItem(item.index)}
-        onExpandItem={item => setExpandedItems([...expandedItems, item.index])}
-        onCollapseItem={item =>
-          setExpandedItems(expandedItems.filter(expandedItemIndex => expandedItemIndex !== item.index))
-        }
-        onSelectItems={items => setSelectedItems(items)}>
-        <Tree treeId="tree-1" rootItem="root" treeLabel="Tree Example" />
-      </ControlledTreeEnvironment>
-    </div>
+      <button onClick={() => updateTreeByViewID(molViewID, setTreeData)}>
+      Update
+    </button>
+      <SceneTree treeData={treeData}/>
+      </div>
   );
 
-  // return (
-  //   <div className={styles.sidePanel}>
-  //      <button onClick={updateTree}>Update</button>
-  //      <UncontrolledTreeEnvironment
-  //       dataProvider={ new StaticTreeDataProvider(treeData) }
-  //       getItemTitle={(item) => item.data}
-  //       viewState={{}}
-  //     >
-  //       <Tree treeId="tree-1" rootItem="root" treeLabel="Scene" />
-  //      </UncontrolledTreeEnvironment>
-  //   </div>
-  // );
 }
 
-  //   const [treeData, setTreeData] = useState(data);
-  //   const handleDrop = (newTree) => setTreeData(newTree);
-
-  // return (
-  //   <div className={styles.sidePanel}>
-  //     <Tree
-  //       tree={treeData}
-  //       rootId={0}
-  //       render={(node, { depth, isOpen, onToggle }) => (
-  //         <div style={{ marginInlineStart: depth * 10 }}>
-  //           {node.droppable && (
-  //             <span onClick={onToggle}>{isOpen ? "[-]" : "[+]"}</span>
-  //           )}
-  //           {node.text}
-  //         </div>
-  //       )}
-  //       dragPreviewRender={(monitorProps) => (
-  //         <div>{monitorProps.item.text}</div>
-  //       )}
-  //       onDrop={handleDrop}
-  //     />
-  //   </div>
-  // );

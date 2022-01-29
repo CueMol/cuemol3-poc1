@@ -1,5 +1,5 @@
 
-export class CueMolMgr {
+export class GfxManager {
   constructor( { cuemol }) {
     // for program object
     this._prog_data = {};
@@ -10,99 +10,9 @@ export class CueMolMgr {
 
     // for VBOs
     this._draw_data = {};
-
     this.cuemol = cuemol;
-
-    const sceMgr = this.cuemol.getService('SceneManager');
-    const scene = sceMgr.createScene();
-    scene.setName('Test Scene');
-    console.log(`Scene created UID: ${scene.getUID()}, name: ${scene.name}`);
-
-    let vw = scene.createView();
-    // vw.name = "Primary View";
-    this._view = vw;
-
-    // this.loadTestRend(scene, vw);
-    // this.loadTestPDB(scene, vw);
   }
-
-  loadTestRend(scene, vw) {
-    let obj = this.cuemol.createObj('Object');
-    scene.addObject(obj);
-    console.log(`Object created UID: ${obj.getUID()}, name: ${obj.name}`);
-
-    // let rend = obj.createRenderer("test");
-    let rend = obj.createRenderer('dltest');
-    console.log(`Renderer created UID: ${rend.getUID()}, name: ${rend.name}`);
-    this.rend = rend;
-  }
-
-  loadTestPDB(scene, vw) {
-    let sceMgr = this.cuemol.getService('SceneManager');
-    let path = sceMgr.convPath('%%CONFDIR%%/1CRN.pdb');
-    console.log('loading PDB file:', path);
-
-    let cmdMgr = this.cuemol.getService('CmdMgr');
-
-    let load_object = cmdMgr.getCmd('load_object');
-    load_object.target_scene = scene;
-    load_object.file_path = path;
-    // load_object.object_name ="1CRN.pdb";
-    load_object.run();
-    let mol = load_object.result_object;
-    // let mol = openFile(cuemol, scene, path, "1CRN.pdb", null, "pdb", null);
-
-    let new_rend = cmdMgr.getCmd('new_renderer');
-    new_rend.target_object = mol;
-    new_rend.renderer_type = 'simple';
-    new_rend.renderer_name = 'simple1';
-    new_rend.recenter_view = true;
-    new_rend.default_style_name = 'DefaultCPKColoring';
-    new_rend.run();
-
-    // let rend = createRend(cuemol, mol, "simple", "simple1", "*");
-    // rend.name = "my renderer";
-    // rend.applyStyles("DefaultCPKColoring");
-    // let pos = rend.getCenter();
-    // console.log("view center:"+pos.toString());
-    // vw.setViewCenter(pos);
-  }
-
-  test() {
-    let xx = this.cuemol.internal.getAllClassNamesJSON();
-    console.log('_internal.classes:', xx);
-
-    let yy;
-    xx = this.cuemol.createObj('Vector');
-    console.log('xx._utils:', xx._utils);
-    console.log('Vector:', xx.toString());
-    xx.x = 0.123;
-    xx.y = 1.23;
-    xx.z = 12.3;
-    console.log('xx._utils:', xx._utils);
-    console.log('length:', xx.length());
-    console.log('xx._utils:', xx._utils);
-    yy = xx.scale(10);
-    console.log(`scaled: ${yy}`);
-
-    //////////
-
-    xx = this.cuemol.createObj('Color');
-    xx.setHSB(1, 1, 120);
-    console.log(`color: ${xx}`);
-  }
-
-  makeModif(event) {
-    let modif = event.buttons;
-    if (event.ctrlKey) {
-      modif += 32;
-    }
-    if (event.shiftKey) {
-      modif += 64;
-    }
-    return modif;
-  }
-
+  
   bindCanvas(canvas) {
     this._canvas = canvas;
     this._context = canvas.getContext('webgl2');
@@ -113,56 +23,15 @@ export class CueMolMgr {
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     gl.enable(gl.BLEND);
 
-    if (window.devicePixelRatio) {
-      this._view.setSclFac(window.devicePixelRatio, window.devicePixelRatio);
-    }
+    // if (window.devicePixelRatio) {
+    //   this._view.setSclFac(window.devicePixelRatio, window.devicePixelRatio);
+    // }
+
     this.cuemol.internal.bindPeer(this._view._wrapped, this);
-
-    canvas.addEventListener('mousedown', (event) => {
-      let modif = this.makeModif(event);
-      // console.log("canvas mousedown");
-      this._view.onMouseDown(
-        event.clientX,
-        event.clientY,
-        event.screenX,
-        event.screenY,
-        modif
-      );
-    });
-    canvas.addEventListener('mouseup', (event) => {
-      let modif = this.makeModif(event);
-      // console.log("canvas mouseup");
-      this._view.onMouseUp(
-        event.clientX,
-        event.clientY,
-        event.screenX,
-        event.screenY,
-        modif
-      );
-    });
-    canvas.addEventListener('mousemove', (event) => {
-      let modif = this.makeModif(event);
-      // console.log("canvas mousemove");
-      this._view.onMouseMove(
-        event.clientX,
-        event.clientY,
-        event.screenX,
-        event.screenY,
-        modif
-      );
-    });
   }
 
-  updateDisplay() {
-    // this._view.rotateView(1.0 * Math.PI / 180, 0, 0);
-    this._view.invalidate();
-    this._view.checkAndUpdate();
-  }
-
-  resized(width, height) {
-    // console.log('resized:', width, height);
-    this._view.sizeChanged(width, height);
-  }
+  //////////
+  // Program objects
 
   toShaderTypeID(name) {
     const gl = this._context;
@@ -175,6 +44,7 @@ export class CueMolMgr {
     }
   }
 
+  /// API
   createShader(name, data) {
     const gl = this._context;
     if (name in this._prog_data) {
@@ -218,6 +88,7 @@ export class CueMolMgr {
     return true;
   }
 
+  /// API
   deleteShader(shader_name) {
     const gl = this._context;
     if (!shader_name in this._prog_data) {
@@ -228,10 +99,13 @@ export class CueMolMgr {
     return true;
   }
 
+  /// API
   enableShader(shader_name) {
     const gl = this._context;
     gl.useProgram(this._prog_data[shader_name]);
   }
+
+  /// API
   disableShader() {
     const gl = this._context;
     gl.useProgram(null);
@@ -243,6 +117,9 @@ export class CueMolMgr {
     gl.clearColor(r, g, b, 1);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   }
+
+  //////////
+  // Projection uniforms
 
   checkMvpMatUBO() {
     if (this._mat_ubo === null) {
@@ -279,6 +156,10 @@ export class CueMolMgr {
     gl.bindBuffer(gl.UNIFORM_BUFFER, null);
   }
 
+  //////////
+  // Buffer
+
+  /// API
   createBuffer(name, nsize, num_elems, nsize_index, elem_info_str) {
     if (name in this._draw_data) {
       console.log(`name ${name} already exists`);
@@ -334,6 +215,7 @@ export class CueMolMgr {
     return true;
   }
 
+  /// API
   drawBuffer(id, nmode, nelems, array_buf, index_buf, isUpdated) {
     const gl = this._context;
     const obj = this._draw_data[id];
@@ -370,6 +252,7 @@ export class CueMolMgr {
     gl.bindVertexArray(null);
   }
 
+  /// API
   deleteBuffer(id) {
     const gl = this._context;
 
@@ -389,4 +272,4 @@ export class CueMolMgr {
 
     return true;
   }
-}
+};

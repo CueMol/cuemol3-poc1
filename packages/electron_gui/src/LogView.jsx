@@ -13,11 +13,12 @@ function useLogEvent(callback) {
   };
 
   useEffect(() => {
-    const cbid = event_manager.addListener("log",
-				                           -1, //event_manager.SEM_ANY, // source type
-				                           -1, // event_manager.SEM_ANY, // event type
-				                           -1, // event_manager.SEM_ANY, // source uid
-				                           handler);
+    const cbid = event_manager.addListener(
+      "log",
+	  event_manager.SEM_ANY, // source type
+	  event_manager.SEM_ANY, // event type
+	  event_manager.SEM_ANY, // source uid
+	  handler);
     
     const logMgr = cuemol.getService("MsgLog");
     const accumMsg = logMgr.getAccumMsg();
