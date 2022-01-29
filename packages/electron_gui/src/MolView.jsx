@@ -1,8 +1,7 @@
-import React, { useRef, useEffect, useContext } from 'react';
-import ReactDOM from 'react-dom';
+import React, { useRef, useEffect, useLayoutEffect, useContext } from 'react';
 import styles from './MolView.css';
 import { CueMolMgr } from './cuemol_system';
-import { MgrContext } from "./App.jsx";
+import { useMolView } from './use_molview.jsx';
 
 const mgr = new CueMolMgr(window.myAPI);
 console.log('CueMolMgr instance:', mgr);
@@ -18,8 +17,8 @@ function adjustCanvasSize(mgr, canvasRef, placeRef, dpr) {
   console.log(`canvas : ${canvas.width} x ${canvas.height}`);
   // canvas.style.top = '0px';
   // canvas.style.left = '0px';
-  canvas.style.width = `${width}px`;
-  canvas.style.height = `${height}px`;
+  // canvas.style.width = `${width}px`;
+  // canvas.style.height = `${height}px`;
   canvas.width = width * dpr;
   canvas.height = height * dpr;
   mgr.resized(width, height);
@@ -35,10 +34,8 @@ function drawArc(canvas) {
 export function MolView() {
   const canvasRef = useRef(null);
   const placeRef = useRef(null);
-  const { mgrRef } = useContext(MgrContext);
-
-  console.log('MgrContext:', MgrContext);
-  console.log('MolView mgrRef:', mgrRef);
+//   const { mgrRef } = useContext(MgrContext);
+  const { molViewID, setMolViewID } = useMolView();
 
   useEffect(() => {
     const dpr = window.devicePixelRatio || 1;
@@ -55,11 +52,15 @@ export function MolView() {
     };
   }, []);
   
-  useEffect(() => {
+  useLayoutEffect(() => {
     mgr.bindCanvas(canvasRef.current);
+    setMolViewID(mgr._view.uid);
+    console.log('useLayoutEffect setMolViewID', molViewID, setMolViewID);
+    // mgrRef.current = mgr;
+
+    // TODO: move to elsewhere??
     mgr.loadTestPDB(mgr._view.getScene(), mgr._view);
     mgr.updateDisplay();
-    mgrRef.current = mgr;
   }, []);
 
   return (

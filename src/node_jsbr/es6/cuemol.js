@@ -40,6 +40,30 @@ export class CueMol {
 }
 
 export class EventManager {
+
+  // event constants
+  // TODO: get values from C++ impl
+  get SEM_ANY() { return -1; }
+  
+  // source category ID definition
+  get SEM_LOG() { return 0x0001; }
+  get SEM_INDEV() { return 0x0002; }
+  get SEM_SCENE() { return 0x0004; }
+  get SEM_OBJECT() { return 0x0008; }
+  get SEM_RENDERER() { return 0x0010; }
+  get SEM_VIEW() { return 0x0020; }
+  get SEM_CAMERA() { return 0x0040; }
+  get SEM_STYLE() { return  0x0080; }
+  get SEM_ANIM () { return   0x0100; }
+  get SEM_EXTND() { return   0x8000; }
+  
+  // event type ID definition
+  get SEM_ADDED() { return  1; }
+  get SEM_REMOVING() { return  2; }
+  get SEM_PROPCHG() { return 3; }
+  get SEM_CHANGED() { return  4; }
+  get SEM_OTHER() { return 9999; }
+  
   constructor(cuemol) {
     this._cuemol = cuemol;
     this._mgr = cuemol.getService('ScrEventManager');
@@ -92,21 +116,22 @@ export class EventManager {
       console.log('unknown evtStr type', evtStr);
     }
 
-    let newargs = new Object();
-    newargs.method = category;
-    newargs.srcCat = srcCat;
-    newargs.evtType = evtType;
-    newargs.srcUID = srcUID;
-    newargs.obj = jobj;
-    // newargs.raw = args;
+    const dict_args = {
+      method: category,
+      srcCat: srcCat,
+      evtType: evtType,
+      srcUID: srcUID,
+      obj: jobj,
+      // raw: args,
+    };
 
     const strslot = slot.toString();
     if (strslot in this._slot) {
       const obs = this._slot[strslot];
       if (typeof obs == "function")
-        return obs(newargs);
+        return obs(dict_args);
       else if ("notify" in obs && typeof obs.notify == "function")
-        return obs.notify(newargs);
+        return obs.notify(dict_args);
       else
         console.log("warning : event for slot "+strslot+" is not delivered!!");
     }

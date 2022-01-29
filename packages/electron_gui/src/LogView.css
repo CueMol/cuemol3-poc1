@@ -1,5 +1,5 @@
 .bottomContainer {
-    flex: 0 0 auto;
+    height: 100%;
 }
 
 .logContainer {
@@ -10,9 +10,9 @@
     border: 0px;
 
     border: 1px solid gray;
-    height: 100px;
+    height: 100%;
     width: 100%;
-    overflow-y: scroll;
+    overflow-y: auto;
     white-space: pre-wrap;
     font-size: 10pt;
 }

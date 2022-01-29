@@ -1,30 +1,27 @@
-import React, { useEffect, useRef, useState } from 'react';
-import ReactDOM from 'react-dom';
+import React, { useEffect } from 'react';
 import styles from './App.css';
 import { SidePanel } from './SidePanel.jsx';
 import { MolView } from './MolView.jsx';
 import { LogView } from './LogView.jsx';
+import { Allotment } from "allotment";
+import "allotment/dist/style.css";
+import { useMolView } from './use_molview.jsx';
+import { getSceneByViewID } from './utils';
 
-const { ipcRenderer } = window.myAPI;
-export const MgrContext = React.createContext();
+const { cuemol, ipcRenderer } = window.myAPI;
 
 export function App() {
-
-  const mgrRef = useRef(null);
-  console.log('App mgrRef:', mgrRef);
+  const { molViewID } = useMolView();
 
   useEffect(() => {
-    function onOpenFile(event, message) {
+    if (molViewID === null) return null;
+
+    function onOpenFile(_, message) {
       console.log('ipcRenderer.on: ', message);
-      const mgr = mgrRef.current;
-      if (mgr === null) {
-        console.log('mgr is null');
-        return;
-      }
+      const scene = getSceneByViewID(cuemol, molViewID);
       
       let file_path = message[0];
-      let scene = mgr._view.getScene();
-      let cmdMgr = mgr.cuemol.getService('CmdMgr');
+      let cmdMgr = cuemol.getService('CmdMgr');
       
       let load_object = cmdMgr.getCmd('load_object');
       load_object.target_scene = scene;
@@ -39,36 +36,32 @@ export function App() {
       new_rend.recenter_view = true;
       new_rend.default_style_name = 'DefaultCPKColoring';
       new_rend.run();
-      mgr.updateDisplay();
+      // mgr.updateDisplay();
     }
     ipcRenderer.on('open-file', onOpenFile);
 
     return () => {
       ipcRenderer.removeListener('open-file', onOpenFile);
     };
-  }, []);
+  }, [molViewID]);
 
   return (
-    <MgrContext.Provider value={{ mgrRef }}>
-
       <div className={styles.content}>
         <div className={styles.menuContainer}>Menu</div>
         <div className={styles.appContainer}>
-          
-          <div className={styles.sidePanelContainer}>
-            <SidePanel />
-            <SidePanel />
-            <SidePanel />
-          </div>
-          <div id="placeholder" className={styles.mainContainer}>
-            <MolView />
-            <LogView />
-          </div>
-          
+          <Allotment defaultSizes={[1, 4]}>
+            <Allotment.Pane snap>
+              <SidePanel />
+            </Allotment.Pane>
+            <Allotment.Pane>
+              <Allotment vertical defaultSizes={[5, 1]}>
+                <MolView />
+                <LogView />
+              </Allotment>
+            </Allotment.Pane>
+          </Allotment>
         </div>
         <div className={styles.statusContainer}>Status</div>
-        
       </div>
-    </MgrContext.Provider>
   );
 }
