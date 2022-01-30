@@ -1,16 +1,17 @@
-import React, { useRef, useEffect, useLayoutEffect, useContext } from 'react';
+import React, { useRef, useEffect, useLayoutEffect } from 'react';
 import styles from './MolView.css';
-import { CueMolMgr } from './cuemol_system';
+// import { CueMolMgr } from './cuemol_system';
 import { useMolView } from './use_molview.jsx';
+import { cuemol_worker } from './worker_utils';
 
-const mgr = new CueMolMgr(window.myAPI);
-console.log('CueMolMgr instance:', mgr);
+// const mgr = new CueMolMgr(window.myAPI);
+// console.log('CueMolMgr instance:', mgr);
 
-function adjustCanvasSize(mgr, canvasRef, placeRef, dpr) {
+function adjustCanvasSize(canvasRef, placeRef, dpr) {
   const canvas = canvasRef.current;
   const place = placeRef.current;
   if (canvas===null ||place===null) {
-    return;
+    return null;
   }
   let { width, height } = place.getBoundingClientRect();
   console.log(`canvas resize: ${width} x ${height}`);
@@ -19,9 +20,10 @@ function adjustCanvasSize(mgr, canvasRef, placeRef, dpr) {
   // canvas.style.left = '0px';
   // canvas.style.width = `${width}px`;
   // canvas.style.height = `${height}px`;
-  canvas.width = width * dpr;
-  canvas.height = height * dpr;
-  mgr.resized(width, height);
+  // canvas.width = width * dpr;
+  // canvas.height = height * dpr;
+  // mgr.resized(width, height);
+  return [width, height];
 }
 
 function drawArc(canvas) {
@@ -34,34 +36,52 @@ function drawArc(canvas) {
 export function MolView() {
   const canvasRef = useRef(null);
   const placeRef = useRef(null);
-//   const { mgrRef } = useContext(MgrContext);
-  const { molViewID, setMolViewID } = useMolView();
+  const { molViewID, setMolViewID, cueMolReady } = useMolView();
 
-  useEffect(() => {
-    const dpr = window.devicePixelRatio || 1;
-    const resizeObserver = new ResizeObserver((entries) => {
-      adjustCanvasSize(mgr, canvasRef, placeRef, dpr);
-      // canvasRef.current && drawArc(canvasRef.current);
-      mgr.updateDisplay();
-    });
-    placeRef.current && resizeObserver.observe(placeRef.current);
-    adjustCanvasSize(mgr, canvasRef, placeRef, dpr);
-    mgr.updateDisplay();
-    return () => {
-      resizeObserver.disconnect();
-    };
-  }, []);
+  // useEffect(() => {
+  //   const dpr = window.devicePixelRatio || 1;
+  //   const resizeObserver = new ResizeObserver((entries) => {
+  //     adjustCanvasSize(mgr, canvasRef, placeRef, dpr);
+  //     // canvasRef.current && drawArc(canvasRef.current);
+  //     mgr.updateDisplay();
+  //   });
+  //   placeRef.current && resizeObserver.observe(placeRef.current);
+  //   adjustCanvasSize(mgr, canvasRef, placeRef, dpr);
+  //   mgr.updateDisplay();
+  //   return () => {
+  //     resizeObserver.disconnect();
+  //   };
+  // }, []);
   
   useLayoutEffect(() => {
-    mgr.bindCanvas(canvasRef.current);
-    setMolViewID(mgr._view.uid);
-    console.log('useLayoutEffect setMolViewID', molViewID, setMolViewID);
-    // mgrRef.current = mgr;
+    console.log('cuemol ready:', cueMolReady);
+    if (cueMolReady) {
+      ( async () => {
+        const [scene_id, view_id] = await cuemol_worker.createScene();
+        console.log('create scene: ', scene_id, view_id);
+        const dpr = window.devicePixelRatio || 1;
+        await cuemol_worker.bindCanvas(canvasRef.current, view_id, dpr);
+        setMolViewID(view_id);
+        console.log('useLayoutEffect setMolViewID', molViewID, setMolViewID);
 
-    // TODO: move to elsewhere??
-    mgr.loadTestPDB(mgr._view.getScene(), mgr._view);
-    mgr.updateDisplay();
-  }, []);
+        const resizeObserver = new ResizeObserver((entries) => {
+          const [w, h] = adjustCanvasSize(canvasRef, placeRef, dpr);
+          // canvasRef.current && drawArc(canvasRef.current);
+          cuemol_worker.resized(view_id, w, h, dpr);
+        });
+        placeRef.current && resizeObserver.observe(placeRef.current);
+        const [w, h] = adjustCanvasSize(canvasRef, placeRef, dpr);
+        cuemol_worker.resized(view_id, w, h, dpr);
+
+        // TODO: move to elsewhere??
+        await cuemol_worker.loadTestPDB(scene_id, view_id);
+      })();
+
+      // return () => {
+      //   resizeObserver.disconnect();
+      // };
+    }
+  }, [cueMolReady]);
 
   return (
     <div className={styles.place} ref={placeRef}>

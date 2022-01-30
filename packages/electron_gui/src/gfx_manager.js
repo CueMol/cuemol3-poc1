@@ -1,6 +1,6 @@
 
 export class GfxManager {
-  constructor( { cuemol }) {
+  constructor(cuemol) {
     // for program object
     this._prog_data = {};
 
@@ -11,23 +11,27 @@ export class GfxManager {
     // for VBOs
     this._draw_data = {};
     this.cuemol = cuemol;
+    this._sceMgr = this.cuemol.getService('SceneManager');
   }
   
-  bindCanvas(canvas) {
+  bindCanvas(canvas, view_id, dpr=null) {
     this._canvas = canvas;
     this._context = canvas.getContext('webgl2');
-    let gl = this._context;
+    const gl = this._context;
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
     gl.disable(gl.CULL_FACE);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     gl.enable(gl.BLEND);
 
-    // if (window.devicePixelRatio) {
-    //   this._view.setSclFac(window.devicePixelRatio, window.devicePixelRatio);
-    // }
+    const view = this._sceMgr.getView(view_id);
+    
+    if (dpr!==null) {
+      console.log('bindCanvas dpr=', dpr);
+      view.setSclFac(dpr, dpr);
+    }
 
-    this.cuemol.internal.bindPeer(this._view._wrapped, this);
+    this.cuemol.internal.bindPeer(view._wrapped, this);
   }
 
   //////////

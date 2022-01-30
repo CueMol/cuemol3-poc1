@@ -1,4 +1,5 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useLayoutEffect } from 'react';
+import { cuemol_worker } from './worker_utils';
 
 const MolViewContext = React.createContext();
 
@@ -8,13 +9,21 @@ export function useMolView() {
 
 export function MolViewProvider({ children }) {
   const [ molViewID, setMolViewID ] = useState(null);
-  console.log('MolViewProvider called:', molViewID);
+  const [ cueMolReady, setCueMolReady ] = useState(false);
   const updateMolViewID = (value) => {
     console.log('updateMolViewID called', value);
     setMolViewID(value);
   };
+
+  useLayoutEffect( () => {
+    ( async () => {
+      await cuemol_worker.loadCueMol();
+      setCueMolReady(true);
+    }) ();
+  }, []);
+
   return (
-      <MolViewContext.Provider value = {{ molViewID, setMolViewID: updateMolViewID }}>
+      <MolViewContext.Provider value = {{ molViewID, setMolViewID: updateMolViewID, cueMolReady }}>
       {children}
     </MolViewContext.Provider>
   );

@@ -1,34 +1,34 @@
 import React, { useEffect } from 'react';
 import styles from './App.css';
-import { SidePanel } from './SidePanel.jsx';
+// import { SidePanel } from './SidePanel.jsx';
 import { MolView } from './MolView.jsx';
 import { LogView } from './LogView.jsx';
 import { Allotment } from "allotment";
 import "allotment/dist/style.css";
 import { useMolView } from './use_molview.jsx';
-import { getSceneByViewID, openPDBFile, updateView } from './utils';
+// import { getSceneByViewID, openPDBFile, updateView } from './utils';
 
-const { cuemol, ipcRenderer } = window.myAPI;
+const { ipcRenderer } = window.myAPI;
 
 export function App() {
   const { molViewID } = useMolView();
 
-  useEffect(() => {
-    if (molViewID === null) return null;
+  // useEffect(() => {
+  //   if (molViewID === null) return null;
 
-    function onOpenFile(_, message) {
-      console.log('ipcRenderer.on: ', message);
-      const scene = getSceneByViewID(cuemol, molViewID);
-      let file_path = message[0];
-      openPDBFile(cuemol, scene, file_path);
-      updateView(cuemol, molViewID);
-    }
-    ipcRenderer.on('open-file', onOpenFile);
+  //   function onOpenFile(_, message) {
+  //     console.log('ipcRenderer.on: ', message);
+  //     const scene = getSceneByViewID(cuemol, molViewID);
+  //     let file_path = message[0];
+  //     openPDBFile(cuemol, scene, file_path);
+  //     updateView(cuemol, molViewID);
+  //   }
+  //   ipcRenderer.on('open-file', onOpenFile);
 
-    return () => {
-      ipcRenderer.removeListener('open-file', onOpenFile);
-    };
-  }, [molViewID]);
+  //   return () => {
+  //     ipcRenderer.removeListener('open-file', onOpenFile);
+  //   };
+  // }, [molViewID]);
 
   return (
       <div className={styles.content}>
@@ -36,12 +36,14 @@ export function App() {
         <div className={styles.appContainer}>
           <Allotment defaultSizes={[1, 4]}>
             <Allotment.Pane snap>
-              <SidePanel />
+              {// <SidePanel />
+              }
             </Allotment.Pane>
             <Allotment.Pane>
               <Allotment vertical defaultSizes={[5, 1]}>
                 <MolView />
-                <LogView />
+                { //<LogView />
+                }
               </Allotment>
             </Allotment.Pane>
           </Allotment>
