@@ -60,8 +60,9 @@ const createWindow = () => {
     webPreferences: {
       // nodeIntegration: true,
       nodeIntegration: false,
-      contextIsolation: false,
-      // contextIsolation: true,
+      nodeIntegrationInWorker: true,
+      // contextIsolation: false,
+      contextIsolation: true,
       preload: path.join(__dirname, 'preload.js'),
     },
   });
@@ -83,11 +84,24 @@ const createWindow = () => {
 
 app.whenReady().then(createWindow);
 
-ipcMain.on('apppath', (event, args) => {
-  event.returnValue = {
-    'appPath': app.getAppPath(),
-    'exePath': app.getPath('exe'),
-    'modulePath': app.getPath('module'),
-    'isPackaged': app.isPackaged,
-  };
-});
+// ipcMain.on('apppath', (event, args) => {
+//   event.returnValue = {
+//     'appPath': app.getAppPath(),
+//     'exePath': app.getPath('exe'),
+//     'modulePath': app.getPath('module'),
+//     'isPackaged': app.isPackaged,
+//   };
+// });
+
+ipcMain.handle(
+  'apppath',
+  async () => {
+    const result = {
+      'appPath': app.getAppPath(),
+      'exePath': app.getPath('exe'),
+      'modulePath': app.getPath('module'),
+      'isPackaged': app.isPackaged,
+    };
+    return result;
+  }
+);
