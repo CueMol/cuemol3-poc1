@@ -18,12 +18,21 @@ console.log('launch worker OK', worker);
 
 const { getAppPathInfo } = window.myAPI;
 
+let worker_onmessage_dict = {};
+
+worker.onmessage = (event) => {
+  const [method, ...args] = event.data;
+  if (method in worker_onmessage_dict) {
+    worker_onmessage_dict[method](...args);
+  }
+};
+
 async function invokeWorker(method, ...args) {
   worker.postMessage([method, ...args]);
 
   let promise = new Promise((resolve, reject) => {
-    worker.onmessage = (event) => {
-      if (event.data) {
+    worker_onmessage_dict[method] = (result) => {
+      if (result) {
         resolve(true);
       } else {
         reject(false);

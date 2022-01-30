@@ -13,10 +13,10 @@ onmessage = (event) => {
     try {
       cuemol = createCueMol(...args);
       evt_mgr = getEventManager();
-      postMessage(true);
+      postMessage(['init-cuemol', true]);
     }
     catch {
-      postMessage(false);
+      postMessage(['init-cuemol', false]);
     }
   }
 };
