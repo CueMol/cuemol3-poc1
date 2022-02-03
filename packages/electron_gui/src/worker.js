@@ -10,6 +10,27 @@ let evt_mgr = null;
 let gfx_mgr = null;
 let sceMgr = null;
 
+const makeModif = (event) => {
+  let modif = event.buttons;
+  if (event.ctrlKey) {
+    modif += 32;
+  }
+  if (event.shiftKey) {
+    modif += 64;
+  }
+  return modif;
+};
+
+const startAnimationFrame = (view_id) => {
+  let view = sceMgr.getView(view_id);
+  const render = () => {
+    view.checkAndUpdate();
+    requestAnimationFrame(render);
+  };
+
+  render();
+};
+
 onmessage = (event) => {
   const [method, ...args] = event.data;
   if (method === 'init-cuemol') {
@@ -42,6 +63,7 @@ onmessage = (event) => {
     try {
       const [canvas, view_id, dpr] = args;
       gfx_mgr.bindCanvas(canvas, view_id, dpr);
+      startAnimationFrame(view_id);
       postMessage([method, true]);
     } catch (e) {
       console.log('bind-canvas failed:', e);
@@ -56,9 +78,60 @@ onmessage = (event) => {
       gfx_mgr._canvas.height = h * dpr;
       view.sizeChanged(w, h);
       view.invalidate();
-      view.checkAndUpdate();
+      // view.checkAndUpdate();
     } catch (e) {
-      console.log('bind-canvas failed:', e);
+      console.log('resized failed:', e);
+      postMessage([method, false]);
+    }
+  }
+  else if (method == 'mouse-down') {
+    try {
+      const [view_id, event] = args;
+      let view = sceMgr.getView(view_id);
+      let modif = makeModif(event);
+      view.onMouseDown(
+        event.clientX,
+        event.clientY,
+        event.screenX,
+        event.screenY,
+        modif
+      );
+    } catch (e) {
+      console.log('mouse-down failed:', e);
+      postMessage([method, false]);
+    }
+  }
+  else if (method == 'mouse-up') {
+    try {
+      const [view_id, event] = args;
+      let view = sceMgr.getView(view_id);
+      let modif = makeModif(event);
+      view.onMouseUp(
+        event.clientX,
+        event.clientY,
+        event.screenX,
+        event.screenY,
+        modif
+      );
+    } catch (e) {
+      console.log('mouse-up failed:', e);
+      postMessage([method, false]);
+    }
+  }
+  else if (method == 'mouse-move') {
+    try {
+      const [view_id, event] = args;
+      let view = sceMgr.getView(view_id);
+      let modif = makeModif(event);
+      view.onMouseMove(
+        event.clientX,
+        event.clientY,
+        event.screenX,
+        event.screenY,
+        modif
+      );
+    } catch (e) {
+      console.log('mouse-move failed:', e);
       postMessage([method, false]);
     }
   }

@@ -84,6 +84,12 @@ class CueMolWorker {
   resized(view_id, w, h, dpr) {
     this._worker.postMessage(['resized', view_id, w, h, dpr]);
   }
+
+  onMouseEvent(view_id, method, event) {
+    const { clientX, clientY, screenX, screenY, buttons } = event;
+    const ev = { clientX, clientY, screenX, screenY, buttons };
+    this._worker.postMessage([method, view_id, ev]);
+  }
 };
 
 export const cuemol_worker = new CueMolWorker();
