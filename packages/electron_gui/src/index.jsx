@@ -11,8 +11,3 @@ ReactDOM.render(
     </MolViewProvider>,
   document.querySelector("#root")
 );
-
-// ReactDOM.render(
-//   <h1>test</h1>,
-//   document.querySelector("#root")
-// );

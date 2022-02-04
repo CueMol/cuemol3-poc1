@@ -1,5 +1,5 @@
 import React, { useState, useContext, useLayoutEffect } from 'react';
-import { cuemol_worker } from './worker_utils';
+import { cuemol_worker } from './cuemol_worker';
 
 const MolViewContext = React.createContext();
 

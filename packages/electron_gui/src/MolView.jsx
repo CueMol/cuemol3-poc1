@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useLayoutEffect } from 'react';
 import styles from './MolView.css';
 import { useMolView } from './use_molview.jsx';
-import { cuemol_worker } from './worker_utils';
+import { cuemol_worker } from './cuemol_worker';
 
 // function drawArc(canvas) {
 //   var ctx = canvas.getContext('2d');

@@ -6,7 +6,6 @@ import { LogView } from './LogView.jsx';
 import { Allotment } from "allotment";
 import "allotment/dist/style.css";
 import { useMolView } from './use_molview.jsx';
-// import { getSceneByViewID, openPDBFile, updateView } from './utils';
 
 const { ipcRenderer } = window.myAPI;
 

@@ -46,7 +46,7 @@ const mainConfig = {
 
 const workerConfig = {
   mode: 'development',
-  entry: './src/worker.js',
+  entry: './src/worker/main.js',
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'worker.js',
