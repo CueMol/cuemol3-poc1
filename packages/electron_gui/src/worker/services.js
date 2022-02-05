@@ -2,7 +2,7 @@ import { GfxManager } from './gfx_manager';
 console.log('worker thread launched');
 const core = require('@cuemol/core');
 console.log('core:', core);
-const { createCueMol, getEventManager } = core;
+const { createCueMol } = core;
 
 const makeModif = (event) => {
   let modif = event.buttons;
@@ -19,6 +19,8 @@ export class WorkerService {
   constructor() {
     this._methods = {
       'init-cuemol': this.initCueMol,
+      'add-event-listener': this.addEventListener,
+      'remove-event-listener': this.removeEventListener,
       'create-scene-view': this.createSceneView,
       'bind-canvas': this.bindCanvas,
       'resized': this.resized,
@@ -26,6 +28,7 @@ export class WorkerService {
       'mouse-up': this.mouseUp,
       'mouse-move': this.mouseMove,
       'load-test-pdb': this.loadTestPDB,
+      'start-logger': this.startLogger,
     };
   }
 
@@ -52,12 +55,33 @@ export class WorkerService {
 
   initCueMol(load_path) {
     this.cuemol = createCueMol(load_path);
-    this.evt_mgr = getEventManager();
     this.gfx_mgr = new GfxManager(this.cuemol);
     this.sceMgr = this.cuemol.getService('SceneManager');
+    this.evtMgr = this.cuemol.getService('ScrEventManager');
+
+    // TODO: removeListener ??
+    this.evtMgr.addListener((...args) => {
+      console.log('add listener called', args);
+      try {
+        postMessage(['event-notify', ...args]);
+      } catch (e) {
+        console.log('event manager notify failed:', e);
+      }
+    });
     return true;
   }
   
+  addEventListener(aCatStr, aSrcType, aEvtType, aSrcID) {
+    const slot_id = this.evtMgr.append(aCatStr, aSrcType, aEvtType, aSrcID);
+    console.log('addEventListener OK slot_id=', slot_id);
+    return slot_id;
+  }
+
+  removeEventListener(nID) {
+    const result = this.evtMgr.remove(nID);
+    return result;
+  }
+
   createSceneView(sceneName, viewName) {
     const scene = this.sceMgr.createScene();
     scene.setName(sceneName);
@@ -129,8 +153,6 @@ export class WorkerService {
     );
   }
 
-  //////////
-
   loadTestPDB(scene_id, view_id) {
     let scene = this.sceMgr.getScene(scene_id);
     let view = this.sceMgr.getView(view_id);
@@ -158,5 +180,12 @@ export class WorkerService {
     //view.checkAndUpdate();
 
     return true;
+  }
+
+  startLogger() {
+    const logMgr = this.cuemol.getService("MsgLog");
+    const accumMsg = logMgr.getAccumMsg();
+    logMgr.removeAccumMsg();
+    return accumMsg;
   }
 };

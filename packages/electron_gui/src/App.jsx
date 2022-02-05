@@ -41,8 +41,7 @@ export function App() {
             <Allotment.Pane>
               <Allotment vertical defaultSizes={[5, 1]}>
                 <MolView />
-                { //<LogView />
-                }
+                <LogView />
               </Allotment>
             </Allotment.Pane>
           </Allotment>

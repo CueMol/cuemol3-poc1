@@ -508,7 +508,7 @@ bool View::safeSetCurrent()
 
 void View::sizeChanged(int cx, int cy)
 {
-    // LOG_DPRINTLN("View.sizeChanged(%d, %d)", cx, cy);
+    LOG_DPRINTLN("View.sizeChanged(%d, %d)", cx, cy);
     m_nWidth = cx;
     m_nHeight = cy;
 
