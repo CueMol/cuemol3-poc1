@@ -1,19 +1,14 @@
-import React, { useRef, useEffect, useLayoutEffect } from 'react';
+import React, { useRef, useLayoutEffect } from 'react';
 import styles from './MolView.css';
-import { useMolView } from './use_molview.jsx';
+import { useMolView } from './hooks/useMolView.jsx';
+import { useCueMol } from './hooks/useCueMol.jsx';
 import { cuemol_worker } from './cuemol_worker';
-
-// function drawArc(canvas) {
-//   var ctx = canvas.getContext('2d');
-//   ctx.beginPath();
-//   ctx.arc(100, 100, 90, 0, Math.PI * 2, true);
-//   ctx.stroke();
-// }
 
 export function MolView() {
   const canvasRef = useRef(null);
   const placeRef = useRef(null);
-  const { molViewID, setMolViewID, cueMolReady } = useMolView();
+  const { molViewID, setMolViewID } = useMolView();
+  const { cueMolReady } = useCueMol();
 
   useLayoutEffect(() => {
     console.log('cuemol ready:', cueMolReady);

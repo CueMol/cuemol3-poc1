@@ -1,44 +1,48 @@
 import React, { useState, useEffect, useLayoutEffect } from 'react';
 import styles from './SidePanel.css';
-import 'react-complex-tree/lib/style.css';
-import { useMolView } from './use_molview.jsx';
+import { useMolView } from './hooks/useMolView.jsx';
 import { SceneTree, defaultTree, createSceneTreeByViewID } from './SceneTree.jsx';
-import { getSceneByViewID } from './utils';
-
-const { cuemol, event_manager } = window.myAPI;
+import * as event from './event';
+import { cuemol_worker } from './cuemol_worker';
 
 function useSceneEvent(callback, view_id) {
   useEffect(() => {
     if (view_id === null) {
       console.log('UseSceneEvent skip:', view_id);
-      return null;
+      return () => {};
     }
 
-    const scene_id = getSceneByViewID(cuemol, view_id).uid;
-    const cbid = event_manager.addListener(
-      "",
-      event_manager.SEM_SCENE|
-        event_manager.SEM_OBJECT|
-        event_manager.SEM_RENDERER|
-        event_manager.SEM_CAMERA|
-        event_manager.SEM_STYLE, // source type
-      event_manager.SEM_ANY, // event type
-      scene_id, // source UID
-      callback);
-    console.log('UseSceneEvent addListerner:', cbid, scene_id);
+    let cbid = null;
+    ( async () => {
+      const scene_id = await cuemol_worker.getSceneByView(view_id);
+      cbid = await cuemol_worker.addEventListener(
+        "",
+        event.SEM_SCENE|
+          event.SEM_OBJECT|
+          event.SEM_RENDERER|
+          event.SEM_CAMERA|
+          event.SEM_STYLE, // source type
+        event.SEM_ANY, // event type
+        scene_id, // source UID
+        callback);
+      console.log('UseSceneEvent addListerner:', cbid, scene_id);
+    })();
+
     return () => {
       console.log('UseSceneEvent removeListerner:', cbid);
-	  event_manager.removeListener(cbid);
+	  cuemol_worker.removeListener(cbid);
     };
   }, [view_id]);
 }
 
-const updateTreeByViewID = (view_id, setter_fn) => {
+const updateTreeByViewID = async (view_id, setter_fn) => {
   if (view_id === null) return;
-  // console.log('SidePanel useLayoutEffect molViewID', molViewID);
-  const tree = createSceneTreeByViewID(cuemol, view_id);
-  if (tree === null) return;
-  setter_fn(tree);
+  console.log('SidePanel calling updateTreeByViewID...');
+  const tree = await createSceneTreeByViewID(view_id);
+  console.log('SidePanel updateTreeByViewID', tree);
+  if (tree !== null) {
+    setter_fn(tree);
+  }
 };
 
 export function SidePanel() {
@@ -46,23 +50,24 @@ export function SidePanel() {
   const [ treeData, setTreeData ] = useState(defaultTree);
 
   useLayoutEffect(() => {
+    console.log('SidePanel useLayoutEffect molViewID', molViewID);
     updateTreeByViewID(molViewID, setTreeData);
   }, [molViewID]);
 
   useSceneEvent( (args) => {
     console.log('scene event handler called', args);
     switch (args.evtType) {
-    case event_manager.SEM_ADDED:
+    case event.SEM_ADDED:
       updateTreeByViewID(molViewID, setTreeData);
       // updateTreeByScene(mgrRef.current, setTreeData);
       console.log('SEM_ADDED update tree called');
       break;
-    case event_manager.SEM_REMOVING:
+    case event.SEM_REMOVING:
       updateTreeByViewID(molViewID, setTreeData);
       // updateTreeByScene(mgrRef.current, setTreeData);
       console.log('SEM_REMOVING update tree called');
       break;
-    case event_manager.SEM_CHANGED:
+    case event.SEM_CHANGED:
       if (args.method==="sceneAllCleared" ||
           args.method==="sceneLoaded") {
           console.log('SEM_CHANGED update tree called');
@@ -70,7 +75,7 @@ export function SidePanel() {
         // updateTreeByScene(mgrRef.current, setTreeData);
       }
       break;  
-    case event_manager.SEM_PROPCHG:
+    case event.SEM_PROPCHG:
       if ("propname" in args.obj) {
         const pnm = args.obj.propname;
         if (pnm==="name" /*|| pnm==="visible" || pnm==="locked"*/) {

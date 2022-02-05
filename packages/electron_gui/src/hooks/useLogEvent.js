@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
 import * as event from '../event';
 import { cuemol_worker } from '../cuemol_worker';
-import { useMolView } from '../use_molview.jsx';
+import { useCueMol } from './useCueMol.jsx';
 
 export function useLogEvent(callback) {
-  const { cueMolReady } = useMolView();
+  const { cueMolReady } = useCueMol();
 
   const handler = ({obj}) => {
     let msg = obj.content;
@@ -18,13 +18,12 @@ export function useLogEvent(callback) {
     if (cueMolReady) {
       let cbid = null;
       ( async () => {
-        const result = await cuemol_worker.addEventListener(
+        cbid = await cuemol_worker.addEventListener(
           "log",
 	      event.SEM_ANY, // source type
 	      event.SEM_ANY, // event type
 	      event.SEM_ANY, // source uid
 	      handler);
-        cbid = result[0];
         console.log('add cuemol event listener cbid=', cbid);
         const accumMsg = await cuemol_worker.startLogger();
         console.log('accumMsg=', accumMsg);

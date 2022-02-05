@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
 import styles from './App.css';
-// import { SidePanel } from './SidePanel.jsx';
+import { SidePanel } from './SidePanel.jsx';
 import { MolView } from './MolView.jsx';
 import { LogView } from './LogView.jsx';
 import { Allotment } from "allotment";
 import "allotment/dist/style.css";
-import { useMolView } from './use_molview.jsx';
+import { useMolView } from './hooks/useMolView.jsx';
 
 const { ipcRenderer } = window.myAPI;
 
@@ -35,8 +35,7 @@ export function App() {
         <div className={styles.appContainer}>
           <Allotment defaultSizes={[1, 4]}>
             <Allotment.Pane snap>
-              {// <SidePanel />
-              }
+              <SidePanel />
             </Allotment.Pane>
             <Allotment.Pane>
               <Allotment vertical defaultSizes={[5, 1]}>

@@ -1,9 +1,14 @@
 
 const { getAppPathInfo } = window.myAPI;
 
+function makeMethodSeq(method, seqno) {
+  return method + '.' + seqno.toString();
+}
+
 class CueMolWorker {
 
   constructor() {
+    this._seqno = 0;
     console.log('launch worker...');
     this._worker = new Worker('./worker.js');
     console.log('launch worker OK', this._worker);
@@ -11,47 +16,71 @@ class CueMolWorker {
     this._worker_onmessage_dict = {};
 
     this._worker.onmessage = (event) => {
-      const [method, ...args] = event.data;
-      if (method in this._worker_onmessage_dict) {
-        this._worker_onmessage_dict[method].apply(this, args);
+      if (event.data[0] === 'event-notify') {
+        const [, ...evtargs] = event.data;
+        try {
+          this.eventNotify(...evtargs);
+        } catch (e) {
+          console.log('event manager notify failed:', e);
+        }
+        return;
+      }
+      const [method, seqno, ...args] = event.data;
+      const method_seq = makeMethodSeq(method, seqno);
+
+      if (method_seq in this._worker_onmessage_dict) {
+        this._worker_onmessage_dict[method_seq].apply(this, args);
+        delete this._worker_onmessage_dict[method_seq];
       }
     };
 
     this._slot = {};
-    this._worker_onmessage_dict['event-notify'] = (...evtargs) => {
-      try {
-        this.eventNotify(...evtargs);
-      } catch (e) {
-        console.log('event manager notify failed:', e);
-      }
-    };
+  }
+
+  postMessage(method, seq, args, xfer=null) {
+    if (xfer === null)
+      this._worker.postMessage([method, seq, ...args]);
+    else
+      this._worker.postMessage([method, seq, ...args], [xfer]);
+  }
+
+  getSeqNo() {
+    this._seqno ++;
+    return this._seqno; 
+  }
+
+  addListener(method, seqno, handler) {
+    const method_seq = makeMethodSeq(method, seqno);
+    this._worker_onmessage_dict[method_seq] = handler;
   }
 
   async invokeWorker(method, ...args) {
+    const cur_seq = this.getSeqNo(); 
     let promise = new Promise((resolve, reject) => {
-      this._worker_onmessage_dict[method] = (result, ...msgargs) => {
+      this.addListener(method, cur_seq, (result, ...msgargs) => {
         if (result) {
           resolve(msgargs);
         } else {
           reject(msgargs);
         }
-      };
+      });
     });
-    this._worker.postMessage([method, ...args]);
+    this.postMessage(method, cur_seq, args);
     return promise;
   }
 
   async invokeWorkerWithTransfer(method, transfer, ...args) {
+    const cur_seq = this.getSeqNo(); 
     let promise = new Promise((resolve, reject) => {
-      this._worker_onmessage_dict[method] = (result, ...msgargs) => {
+      this.addListener(method, cur_seq, (result, ...msgargs) => {
         if (result) {
           resolve(msgargs);
         } else {
           reject(msgargs);
         }
-      };
+      });
     });
-    this._worker.postMessage([method, transfer, ...args], [transfer]);
+    this.postMessage(method, cur_seq, args, transfer);
     return promise;
   }
 
@@ -81,9 +110,19 @@ class CueMolWorker {
     return await this.invokeWorker('create-scene-view', 'Scene 1', 'View 1');
   }
 
+  async getSceneByView(view_id) {
+    const [scene_id] = await this.invokeWorker('get-scene-by-view', view_id);
+    return scene_id;
+  }
+
+  async getSceneData(scene_id) {
+    const [data] = await this.invokeWorker('get-scene-data', scene_id);
+    return data;
+  }
+
   async bindCanvas(canvas, view_id, dpr) {
     const offscreen = canvas.transferControlToOffscreen();
-    return await this.invokeWorkerWithTransfer('bind-canvas', offscreen, view_id, dpr);
+    return await this.invokeWorkerWithTransfer('bind-canvas', offscreen, offscreen, view_id, dpr);
   }
 
   async loadTestPDB(scene_id, view_id) {
@@ -91,17 +130,19 @@ class CueMolWorker {
   }
 
   resized(view_id, w, h, dpr) {
-    this._worker.postMessage(['resized', view_id, w, h, dpr]);
+    const cur_seq = this.getSeqNo(); 
+    this.postMessage('resized', cur_seq, [view_id, w, h, dpr]);
   }
 
   onMouseEvent(view_id, method, event) {
     const { clientX, clientY, screenX, screenY, buttons } = event;
     const ev = { clientX, clientY, screenX, screenY, buttons };
-    this._worker.postMessage([method, view_id, ev]);
+    const cur_seq = this.getSeqNo(); 
+    this.postMessage(method, cur_seq, [view_id, ev]);
   }
 
   async addEventListener(aCatStr, aSrcType, aEvtType, aSrcID, aObs) {
-    const slot_id = await this.invokeWorker('add-event-listener',
+    const [slot_id] = await this.invokeWorker('add-event-listener',
                                             aCatStr, aSrcType, aEvtType, aSrcID);
     console.log("event listener registered: <"+aCatStr+">, id="+slot_id);
     this._slot[slot_id.toString()] = aObs;
@@ -160,6 +201,7 @@ class CueMolWorker {
     }
     return null;
   }
+
 };
 
 export const cuemol_worker = new CueMolWorker();

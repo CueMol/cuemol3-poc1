@@ -29,26 +29,30 @@ export class WorkerService {
       'mouse-move': this.mouseMove,
       'load-test-pdb': this.loadTestPDB,
       'start-logger': this.startLogger,
+      'get-scene-by-view': this.getSceneByView,
+      'get-scene-data': this.getSceneData,
     };
   }
 
   invoke(data) {
-    const [method, ...args] = data;
+    const [method, seqno, ...args] = data;
     if (!method in this._methods) {
       console.log('unknown method:', method);
-      postMessage([method, false]);
+      postMessage([method, seqno, false]);
       return;
     }
 
     try {
       const result = this._methods[method].apply(this, args);
-      if (Array.isArray(result))
-        postMessage([method, true, ...result]);
-      else if (result !== undefined)
-        postMessage([method, true, result]);
+      if (Array.isArray(result)) {
+        postMessage([method, seqno, true, ...result]);
+      }
+      else if (result !== undefined) {
+        postMessage([method, seqno, true, result]);
+      }
     } catch (e) {
       console.log('call method failed:', method, e);
-      postMessage([method, false]);
+      postMessage([method, seqno, false]);
     }
     
   }
@@ -61,7 +65,6 @@ export class WorkerService {
 
     // TODO: removeListener ??
     this.evtMgr.addListener((...args) => {
-      console.log('add listener called', args);
       try {
         postMessage(['event-notify', ...args]);
       } catch (e) {
@@ -92,8 +95,8 @@ export class WorkerService {
   }
 
   bindCanvas(canvas, view_id, dpr) {
+    console.log('bindCanvas:', canvas, view_id, dpr);
     this.gfx_mgr.bindCanvas(canvas, view_id, dpr);
-    console.log('this:', this);
     this._startAnimationFrame(view_id);
     return true;
   }
@@ -187,5 +190,23 @@ export class WorkerService {
     const accumMsg = logMgr.getAccumMsg();
     logMgr.removeAccumMsg();
     return accumMsg;
+  }
+
+  getSceneByView(view_id) {
+    if (view_id === null) {
+      throw new Error('view_id is null');
+    }
+    const view = this.sceMgr.getView(view_id);
+    const scene = view.getScene();
+    const result = scene.uid;
+    console.log('Worker scene ID:', result);
+    return result;
+  }
+
+  getSceneData(scene_id) {
+    const scene = this.sceMgr.getScene(scene_id);
+    const json_str = scene.getSceneDataJSON();
+    console.log('getSceneData JSON str=', json_str);
+    return [JSON.parse(json_str)];
   }
 };

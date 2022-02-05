@@ -1,11 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import styles from './LogView.css';
 import { useLogEvent } from './hooks/useLogEvent';
-// const { cuemol, event_manager } = window.myAPI;
-// import { cuemol_worker } from './cuemol_worker';
-
-
-//////////
 
 export function LogView() {
   const [contents, setContents] = useState('');
