@@ -159,6 +159,10 @@ class CueMolWorker {
     return await this.invokeWorker('start-logger');
   }
 
+  async openPDBFile(scene_id, file_path) {
+    return await this.invokeWorker('open-pdb-file', scene_id, file_path);
+  }
+
   eventNotify(slot, category, srcCat, evtType, srcUID, evtStr) {
     let json = null;
     let jobj = null;

@@ -31,6 +31,7 @@ export class WorkerService {
       'start-logger': this.startLogger,
       'get-scene-by-view': this.getSceneByView,
       'get-scene-data': this.getSceneData,
+      'open-pdb-file': this.openPDBFile,
     };
   }
 
@@ -62,6 +63,7 @@ export class WorkerService {
     this.gfx_mgr = new GfxManager(this.cuemol);
     this.sceMgr = this.cuemol.getService('SceneManager');
     this.evtMgr = this.cuemol.getService('ScrEventManager');
+    this.cmdMgr = this.cuemol.getService('CmdMgr');
 
     // TODO: removeListener ??
     this.evtMgr.addListener((...args) => {
@@ -162,16 +164,14 @@ export class WorkerService {
     let path = this.sceMgr.convPath('%%CONFDIR%%/1CRN.pdb');
     console.log('loading PDB file:', path);
     
-    let cmdMgr = this.cuemol.getService('CmdMgr');
-    
-    let load_object = cmdMgr.getCmd('load_object');
+    let load_object = this.cmdMgr.getCmd('load_object');
     load_object.target_scene = scene;
     load_object.file_path = path;
     // load_object.object_name ="1CRN.pdb";
     load_object.run();
     let mol = load_object.result_object;
     
-    let new_rend = cmdMgr.getCmd('new_renderer');
+    let new_rend = this.cmdMgr.getCmd('new_renderer');
     new_rend.target_object = mol;
     new_rend.renderer_type = 'simple';
     new_rend.renderer_name = 'simple1';
@@ -208,5 +208,24 @@ export class WorkerService {
     const json_str = scene.getSceneDataJSON();
     console.log('getSceneData JSON str=', json_str);
     return [JSON.parse(json_str)];
+  }
+
+  openPDBFile(scene_id, file_path) {
+    const scene = this.sceMgr.getScene(scene_id);
+
+    let load_object = this.cmdMgr.getCmd('load_object');
+    load_object.target_scene = scene;
+    load_object.file_path = file_path;
+    load_object.run();
+    let mol = load_object.result_object;
+  
+    let new_rend = this.cmdMgr.getCmd('new_renderer');
+    new_rend.target_object = mol;
+    new_rend.renderer_type = 'simple';
+    new_rend.renderer_name = 'simple1';
+    new_rend.recenter_view = true;
+    new_rend.default_style_name = 'DefaultCPKColoring';
+    new_rend.run();
+    return [mol.uid, new_rend.uid];
   }
 };

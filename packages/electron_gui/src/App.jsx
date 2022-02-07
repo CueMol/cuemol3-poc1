@@ -6,28 +6,28 @@ import { LogView } from './LogView.jsx';
 import { Allotment } from "allotment";
 import "allotment/dist/style.css";
 import { useMolView } from './hooks/useMolView.jsx';
+import { cuemol_worker } from './cuemol_worker';
 
-const { ipcRenderer } = window.myAPI;
+const { ipcOn, ipcRemoveListener } = window.myAPI;
 
 export function App() {
   const { molViewID } = useMolView();
 
-  // useEffect(() => {
-  //   if (molViewID === null) return null;
+  useEffect(() => {
+    if (molViewID === null) return null;
 
-  //   function onOpenFile(_, message) {
-  //     console.log('ipcRenderer.on: ', message);
-  //     const scene = getSceneByViewID(cuemol, molViewID);
-  //     let file_path = message[0];
-  //     openPDBFile(cuemol, scene, file_path);
-  //     updateView(cuemol, molViewID);
-  //   }
-  //   ipcRenderer.on('open-file', onOpenFile);
+    async function onOpenFile(_, message) {
+      console.log('ipcRenderer.on: ', message);
+      const scene_id = await cuemol_worker.getSceneByView(molViewID);
+      let file_path = message[0];
+      cuemol_worker.openPDBFile(scene_id, file_path);
+    }
+    ipcOn('open-file', onOpenFile);
 
-  //   return () => {
-  //     ipcRenderer.removeListener('open-file', onOpenFile);
-  //   };
-  // }, [molViewID]);
+    return () => {
+      ipcRemoveListener('open-file', onOpenFile);
+    };
+  }, [molViewID]);
 
   return (
       <div className={styles.content}>

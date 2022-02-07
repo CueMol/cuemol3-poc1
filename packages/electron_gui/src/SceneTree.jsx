@@ -83,11 +83,8 @@ const convTree = (data) => {
 };
 
 export const createSceneTreeByViewID = async (view_id) => {
-  console.log('createSceneTree called:', view_id);
   const scene_id = await cuemol_worker.getSceneByView(view_id);
-  console.log('createSceneTree scene id:', scene_id);
   const data = await cuemol_worker.getSceneData(scene_id);
-  console.log('createSceneTree result:', data[0]);
   return convTree(data);
 };
 

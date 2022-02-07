@@ -84,15 +84,6 @@ const createWindow = () => {
 
 app.whenReady().then(createWindow);
 
-// ipcMain.on('apppath', (event, args) => {
-//   event.returnValue = {
-//     'appPath': app.getAppPath(),
-//     'exePath': app.getPath('exe'),
-//     'modulePath': app.getPath('module'),
-//     'isPackaged': app.isPackaged,
-//   };
-// });
-
 ipcMain.handle(
   'apppath',
   async () => {

@@ -1,7 +1,11 @@
 const { ipcRenderer } = require('electron');
 const { contextBridge } = require('electron');
 
+
 /////
+
+let callback_id_gen = 0;
+let callback_dict = {};
 
 contextBridge.exposeInMainWorld('myAPI', {
   ipcRenderer: ipcRenderer,
@@ -9,21 +13,12 @@ contextBridge.exposeInMainWorld('myAPI', {
   getAppPathInfo: async () => {
     return (await ipcRenderer.invoke("apppath"));
   },
+
+  ipcOn: (method, handler) => {
+    ipcRenderer.on(method, handler);
+  },
+  ipcRemoveListener: (method, handler) => {
+    ipcRenderer.removeListener(method, handler);
+  },
+
 });
-
-
-// const core = require('@cuemol/core');
-// console.log('core:', core);
-// const { createCueMol, getEventManager } = core;
-
-// console.log('createCueMol:', createCueMol);
-// console.log('ipcRenderer:', ipcRenderer);
-
-// const cuemol = createCueMol(load_path);
-// const evt_mgr = getEventManager();
-
-// window.myAPI = {
-//   ipcRenderer: ipcRenderer,
-//   cuemol: cuemol,
-//   event_manager: evt_mgr,
-// };
