@@ -35,6 +35,10 @@ const mainConfig = {
         use: ["style-loader", "css-loader"],
       },
       {
+        test: /react-tabs.css$/,
+        use: ["style-loader", "css-loader"],
+      },
+      {
         test: /\.css$/,
         exclude: /node_modules/,
         use: [{loader: 'style-loader'},

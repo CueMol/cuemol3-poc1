@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import styles from './App.css';
 import { SidePanel } from './SidePanel.jsx';
-import { MolView } from './MolView.jsx';
+import { TabMolView } from './TabMolView.jsx';
 import { LogView } from './LogView.jsx';
 import { Allotment } from "allotment";
 import "allotment/dist/style.css";
@@ -39,7 +39,7 @@ export function App() {
             </Allotment.Pane>
             <Allotment.Pane>
               <Allotment vertical defaultSizes={[5, 1]}>
-                <MolView />
+                <TabMolView />
                 <LogView />
               </Allotment>
             </Allotment.Pane>

@@ -6,7 +6,7 @@ import { cuemol_worker } from './cuemol_worker';
 
 export function MolView() {
   const canvasRef = useRef(null);
-  const placeRef = useRef(null);
+  // const placeRef = useRef(null);
   const { molViewID, setMolViewID } = useMolView();
   const { cueMolReady } = useCueMol();
 
@@ -32,11 +32,12 @@ export function MolView() {
     const dpr = window.devicePixelRatio || 1;
     const resizeObserver = new ResizeObserver((_) => {
       if (molViewID !== null) {
-        let { width, height } = placeRef.current.getBoundingClientRect();
+        let { width, height } = canvasRef.current.getBoundingClientRect();
+        console.log('canvas size:', height, width);
         cuemol_worker.resized(molViewID, width, height, dpr);
       }
     });
-    resizeObserver.observe(placeRef.current);
+    resizeObserver.observe(canvasRef.current);
     return () => {
       resizeObserver.disconnect();
     };
@@ -71,8 +72,6 @@ export function MolView() {
 
 
   return (
-    <div className={styles.place} ref={placeRef}>
-      <canvas className={styles.molView} ref={canvasRef} />
-    </div>
+    <canvas className={styles.molView} ref={canvasRef} />
   );
 }
