@@ -10,8 +10,10 @@ import { cuemol_worker } from './cuemol_worker';
 
 const { ipcOn, ipcRemoveListener } = window.myAPI;
 
+let ind = 0;
+
 export function App() {
-  const { molViewID } = useMolView();
+  const { molViewID, addMolView } = useMolView();
 
   useEffect(() => {
     if (molViewID === null) return null;
@@ -28,6 +30,20 @@ export function App() {
       ipcRemoveListener('open-file', onOpenFile);
     };
   }, [molViewID]);
+
+  useEffect(() => {
+    async function onNewScene() {
+      addMolView(`Scene ${ind}`, ind);
+      console.log('onNewScene called', ind);
+      ind++;
+    }
+
+    ipcOn('new-scene', onNewScene);
+
+    return () => {
+      ipcRemoveListener('new-scene', onNewScene);
+    };
+  }, []);
 
   return (
       <div className={styles.content}>

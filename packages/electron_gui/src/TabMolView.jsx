@@ -3,21 +3,30 @@ import { MolView } from './MolView.jsx';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 import styles from './TabMolView.css';
+import { useMolView } from './hooks/useMolView.jsx';
 
 // <button className={styles.tabs}>xxx</button>
 
 export function TabMolView() {
-  const onSelectFn = () => {
-    console.log('on select called!!!');
+  const { molViewTabs, setActiveTab } = useMolView();
+  const onSelectFn = (ind, prev_ind, ...args) => {
+    console.log('on select called!!!', args);
+    setActiveTab(ind);
   };
+
+  console.log('molViewTabs.length:', molViewTabs.length);
+  const tabs = molViewTabs.map( tab => {
+    return (
+      <Tab>{ tab.title }:{ tab.active?1:0 }</Tab>
+    );
+  });
+
   return (
     <div className={styles.tabMolView}>
       <Tabs className={styles.tabs} onSelect={onSelectFn}>
         <TabList className={styles.tabList}>
-          <Tab>Tab 1</Tab>
-          <Tab>Tab 2</Tab>
-          <Tab>Tab 3</Tab>
-          <Tab>Tab 4</Tab>
+          { tabs }
+          <Tab disabled>+</Tab>
         </TabList>
       </Tabs>
       <MolView className={styles.panel} />

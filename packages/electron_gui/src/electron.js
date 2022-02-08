@@ -9,6 +9,27 @@ console.log('app.getPath(exe):', app.getPath('exe'));
 
 let mainWindow;
 
+function openFile() {
+  console.log('Open File clicked...');
+  const paths = dialog.showOpenDialogSync(mainWindow, {
+    buttonLabel: 'Open',
+    filters: [{ name: 'PDB', extensions: ['pdb'] }],
+    properties: ['openFile', 'createDirectory'],
+  });
+  console.log('Open File path:', paths);
+  mainWindow.webContents.send('open-file', paths);
+}
+
+function newScene() {
+  console.log('New Scene clicked...');
+  mainWindow.webContents.send('new-scene');
+}
+
+function closeTab() {
+  console.log('Close Tab clicked...');
+  mainWindow.webContents.send('close-tab');
+}
+
 const template = [
   ...(isMac
     ? [
@@ -33,16 +54,13 @@ const template = [
     submenu: [
       {
         label: 'Open File...',
-        click: () => {
-          console.log('Open File clicked...');
-          const paths = dialog.showOpenDialogSync(mainWindow, {
-            buttonLabel: 'Open',
-            filters: [{ name: 'PDB', extensions: ['pdb'] }],
-            properties: ['openFile', 'createDirectory'],
-          });
-          console.log('Open File path:', paths);
-          mainWindow.webContents.send('open-file', paths);
-        },
+        click: openFile,
+      }, {
+        label: 'New Scene...',
+        click: newScene,
+      }, {
+        label: 'Close Tab...',
+        click: closeTab,
       },
       isMac ? { role: 'close' } : { role: 'quit' },
     ],
