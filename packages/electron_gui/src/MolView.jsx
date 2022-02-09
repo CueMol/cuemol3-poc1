@@ -1,12 +1,18 @@
-import React, { useRef, useLayoutEffect } from 'react';
+import React, { useRef, forwardRef, useLayoutEffect } from 'react';
 import styles from './MolView.css';
 import { useMolView } from './hooks/useMolView.jsx';
 import { useCueMol } from './hooks/useCueMol.jsx';
 import { cuemol_worker } from './cuemol_worker';
 
-export function MolView() {
+function mergeRefs(ref1, ref2) {
+  return (value) => {
+    ref1.current = value;
+    ref2.current = value;
+  };
+}
+
+export const MolView = () => {
   const canvasRef = useRef(null);
-  // const placeRef = useRef(null);
   const { molViewID, setMolViewID } = useMolView();
   const { cueMolReady } = useCueMol();
 
@@ -35,6 +41,7 @@ export function MolView() {
         let { width, height } = canvasRef.current.getBoundingClientRect();
         console.log('canvas size:', height, width);
         cuemol_worker.resized(molViewID, width, height, dpr);
+        // cuemol_worker.resized(molViewID, 100, 100, dpr);
       }
     });
     resizeObserver.observe(canvasRef.current);
@@ -74,4 +81,4 @@ export function MolView() {
   return (
     <canvas className={styles.molView} ref={canvasRef} />
   );
-}
+};

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { MolView } from './MolView.jsx';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
@@ -29,7 +29,7 @@ export function TabMolView() {
           <Tab disabled>+</Tab>
         </TabList>
       </Tabs>
-      <MolView className={styles.panel} />
+      <MolView className={styles.panel}/>
     </div>
   );
 };
