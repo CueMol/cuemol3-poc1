@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { ControlledTreeEnvironment, Tree } from 'react-complex-tree';
 import 'react-complex-tree/lib/style.css';
-import { getSceneByViewID } from './utils';
+// import { getSceneByViewID } from './utils';
+import { cuemol_worker } from './cuemol_worker';
+
 
 export const defaultTree = {'root': {
   index: 'root',
@@ -80,10 +82,9 @@ const convTree = (data) => {
   return result;
 };
 
-export const createSceneTreeByViewID = (cuemol, view_id) => {
-  const scene = getSceneByViewID(cuemol, view_id);
-  const json_str = scene.getSceneDataJSON();
-  const data = JSON.parse(json_str);
+export const createSceneTreeByViewID = async (view_id) => {
+  const scene_id = await cuemol_worker.getSceneByView(view_id);
+  const data = await cuemol_worker.getSceneData(scene_id);
   return convTree(data);
 };
 
@@ -112,6 +113,4 @@ export function SceneTree({ treeData }) {
       <Tree treeId="tree-1" rootItem="root" treeLabel="Tree Example" />
       </ControlledTreeEnvironment>
   );
-
 }
-

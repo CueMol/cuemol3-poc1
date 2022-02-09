@@ -1,71 +1,84 @@
-import React, { useRef, useEffect, useLayoutEffect, useContext } from 'react';
+import React, { useRef, forwardRef, useLayoutEffect } from 'react';
 import styles from './MolView.css';
-import { CueMolMgr } from './cuemol_system';
-import { useMolView } from './use_molview.jsx';
+import { useMolView } from './hooks/useMolView.jsx';
+import { useCueMol } from './hooks/useCueMol.jsx';
+import { cuemol_worker } from './cuemol_worker';
 
-const mgr = new CueMolMgr(window.myAPI);
-console.log('CueMolMgr instance:', mgr);
-
-function adjustCanvasSize(mgr, canvasRef, placeRef, dpr) {
-  const canvas = canvasRef.current;
-  const place = placeRef.current;
-  if (canvas===null ||place===null) {
-    return;
-  }
-  let { width, height } = place.getBoundingClientRect();
-  console.log(`canvas resize: ${width} x ${height}`);
-  console.log(`canvas : ${canvas.width} x ${canvas.height}`);
-  // canvas.style.top = '0px';
-  // canvas.style.left = '0px';
-  // canvas.style.width = `${width}px`;
-  // canvas.style.height = `${height}px`;
-  canvas.width = width * dpr;
-  canvas.height = height * dpr;
-  mgr.resized(width, height);
+function mergeRefs(ref1, ref2) {
+  return (value) => {
+    ref1.current = value;
+    ref2.current = value;
+  };
 }
 
-function drawArc(canvas) {
-  var ctx = canvas.getContext('2d');
-  ctx.beginPath();
-  ctx.arc(100, 100, 90, 0, Math.PI * 2, true);
-  ctx.stroke();
-}
-
-export function MolView() {
+export const MolView = () => {
   const canvasRef = useRef(null);
-  const placeRef = useRef(null);
-//   const { mgrRef } = useContext(MgrContext);
   const { molViewID, setMolViewID } = useMolView();
+  const { cueMolReady } = useCueMol();
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    console.log('cuemol ready:', cueMolReady);
+    if (cueMolReady) {
+      ( async () => {
+        const [scene_id, view_id] = await cuemol_worker.createScene();
+        console.log('create scene: ', scene_id, view_id);
+        const dpr = window.devicePixelRatio || 1;
+        await cuemol_worker.bindCanvas(canvasRef.current, view_id, dpr);
+        setMolViewID(view_id);
+        console.log('useLayoutEffect setMolViewID', molViewID, setMolViewID);
+
+        // TODO: move to elsewhere??
+        await cuemol_worker.loadTestPDB(scene_id, view_id);
+      })();
+
+    }
+  }, [cueMolReady]);
+
+  useLayoutEffect(() => {
     const dpr = window.devicePixelRatio || 1;
-    const resizeObserver = new ResizeObserver((entries) => {
-      adjustCanvasSize(mgr, canvasRef, placeRef, dpr);
-      // canvasRef.current && drawArc(canvasRef.current);
-      mgr.updateDisplay();
+    const resizeObserver = new ResizeObserver((_) => {
+      if (molViewID !== null) {
+        let { width, height } = canvasRef.current.getBoundingClientRect();
+        console.log('canvas size:', height, width);
+        cuemol_worker.resized(molViewID, width, height, dpr);
+        // cuemol_worker.resized(molViewID, 100, 100, dpr);
+      }
     });
-    placeRef.current && resizeObserver.observe(placeRef.current);
-    adjustCanvasSize(mgr, canvasRef, placeRef, dpr);
-    mgr.updateDisplay();
+    resizeObserver.observe(canvasRef.current);
     return () => {
       resizeObserver.disconnect();
     };
-  }, []);
-  
-  useLayoutEffect(() => {
-    mgr.bindCanvas(canvasRef.current);
-    setMolViewID(mgr._view.uid);
-    console.log('useLayoutEffect setMolViewID', molViewID, setMolViewID);
-    // mgrRef.current = mgr;
+  }, [molViewID]);
 
-    // TODO: move to elsewhere??
-    mgr.loadTestPDB(mgr._view.getScene(), mgr._view);
-    mgr.updateDisplay();
-  }, []);
+  useLayoutEffect(() => {
+    const onMouseDown = (event) => {
+      if (molViewID !== null) {
+        cuemol_worker.onMouseEvent(molViewID, 'mouse-down', event);
+      }
+    };
+    const onMouseUp = (event) => {
+      if (molViewID !== null) {
+        cuemol_worker.onMouseEvent(molViewID, 'mouse-up', event);
+      }
+    };
+    const onMouseMove = (event) => {
+      if (molViewID !== null) {
+        cuemol_worker.onMouseEvent(molViewID, 'mouse-move', event);
+      }
+    };
+    const canvas = canvasRef.current;
+    canvas.addEventListener('mousedown', onMouseDown);
+    canvas.addEventListener('mouseup', onMouseUp);
+    canvas.addEventListener('mousemove', onMouseMove);
+    return () => {
+      canvas.removeEventListener('mousedown', onMouseDown);
+      canvas.removeEventListener('mouseup', onMouseUp);
+      canvas.removeEventListener('mousemove', onMouseMove);
+    };
+  }, [molViewID]);
+
 
   return (
-    <div className={styles.place} ref={placeRef}>
-      <canvas className={styles.molView} ref={canvasRef} />
-    </div>
+    <canvas className={styles.molView} ref={canvasRef} />
   );
-}
+};

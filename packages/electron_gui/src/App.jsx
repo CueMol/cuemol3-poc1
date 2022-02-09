@@ -1,34 +1,49 @@
 import React, { useEffect } from 'react';
 import styles from './App.css';
 import { SidePanel } from './SidePanel.jsx';
-import { MolView } from './MolView.jsx';
+import { TabMolView } from './TabMolView.jsx';
 import { LogView } from './LogView.jsx';
 import { Allotment } from "allotment";
 import "allotment/dist/style.css";
-import { useMolView } from './use_molview.jsx';
-import { getSceneByViewID, openPDBFile, updateView } from './utils';
+import { useMolView } from './hooks/useMolView.jsx';
+import { cuemol_worker } from './cuemol_worker';
 
-const { cuemol, ipcRenderer } = window.myAPI;
+const { ipcOn, ipcRemoveListener } = window.myAPI;
+
+let ind = 0;
 
 export function App() {
-  const { molViewID } = useMolView();
+  const { molViewID, addMolView } = useMolView();
 
   useEffect(() => {
     if (molViewID === null) return null;
 
-    function onOpenFile(_, message) {
+    async function onOpenFile(_, message) {
       console.log('ipcRenderer.on: ', message);
-      const scene = getSceneByViewID(cuemol, molViewID);
+      const scene_id = await cuemol_worker.getSceneByView(molViewID);
       let file_path = message[0];
-      openPDBFile(cuemol, scene, file_path);
-      updateView(cuemol, molViewID);
+      cuemol_worker.openPDBFile(scene_id, file_path);
     }
-    ipcRenderer.on('open-file', onOpenFile);
+    ipcOn('open-file', onOpenFile);
 
     return () => {
-      ipcRenderer.removeListener('open-file', onOpenFile);
+      ipcRemoveListener('open-file', onOpenFile);
     };
   }, [molViewID]);
+
+  useEffect(() => {
+    async function onNewScene() {
+      addMolView(`Scene ${ind}`, ind);
+      console.log('onNewScene called', ind);
+      ind++;
+    }
+
+    ipcOn('new-scene', onNewScene);
+
+    return () => {
+      ipcRemoveListener('new-scene', onNewScene);
+    };
+  }, []);
 
   return (
       <div className={styles.content}>
@@ -40,7 +55,7 @@ export function App() {
             </Allotment.Pane>
             <Allotment.Pane>
               <Allotment vertical defaultSizes={[5, 1]}>
-                <MolView />
+                <TabMolView />
                 <LogView />
               </Allotment>
             </Allotment.Pane>

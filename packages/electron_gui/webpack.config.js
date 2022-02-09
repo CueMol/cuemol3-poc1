@@ -3,10 +3,9 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 // import { Configuration } from 'webpack';
 
-module.exports = {
+const mainConfig = {
   mode: 'development',
-  // entry: ['./src/index.js'],
-  entry: ['./src/index.jsx'],
+  entry: './src/index.jsx',
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'index.js',
@@ -23,9 +22,20 @@ module.exports = {
         test: /\.jsx$/,
         exclude: /(node_modules)/,
         loader: "babel-loader",
+        options: {
+          presets: [
+            '@babel/preset-env',
+            '@babel/preset-react'
+          ],
+          plugins: ['@babel/plugin-transform-runtime'],
+        },
       },
       {
         test: /style.css$/,
+        use: ["style-loader", "css-loader"],
+      },
+      {
+        test: /react-tabs.css$/,
         use: ["style-loader", "css-loader"],
       },
       {
@@ -38,4 +48,33 @@ module.exports = {
   }
 };
 
+const workerConfig = {
+  mode: 'development',
+  entry: './src/worker/main.js',
+  output: {
+    path: path.resolve(__dirname, 'dist'),
+    filename: 'worker.js',
+    libraryTarget: 'commonjs2',
+  },
+  externals: [
+    '@cuemol/core',
+  ],
+  devtool: 'inline-source-map',
+};
+
+const preloadConfig = {
+  mode: 'development',
+  entry: './src/preload.js',
+  output: {
+    path: path.resolve(__dirname, 'dist'),
+    filename: 'preload.js',
+    libraryTarget: 'commonjs2',
+  },
+  externals: [
+    'electron',
+  ],
+  devtool: 'inline-source-map',
+};
+
+module.exports = [mainConfig, workerConfig, preloadConfig];
 // export default config;
