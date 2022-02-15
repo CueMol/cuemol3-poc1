@@ -10,8 +10,6 @@ import { cuemol_worker } from './cuemol_worker';
 
 const { ipcOn, ipcRemoveListener } = window.myAPI;
 
-let ind = 0;
-
 export function App() {
   const { molViewID, addMolView } = useMolView();
 
@@ -33,9 +31,11 @@ export function App() {
 
   useEffect(() => {
     async function onNewScene() {
-      addMolView(`Scene ${ind}`, ind);
-      console.log('onNewScene called', ind);
-      ind++;
+      const [scene_id, view_id] = await cuemol_worker.createScene();
+      console.log('create scene: ', scene_id, view_id);
+      addMolView(`Scene ${scene_id}`, view_id);
+      cuemol_worker.addView(null, view_id);
+      console.log('onNewScene called', scene_id);
     }
 
     ipcOn('new-scene', onNewScene);

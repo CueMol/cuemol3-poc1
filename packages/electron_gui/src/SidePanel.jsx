@@ -25,12 +25,12 @@ function useSceneEvent(callback, view_id) {
         event.SEM_ANY, // event type
         scene_id, // source UID
         callback);
-      console.log('UseSceneEvent addListerner:', cbid, scene_id);
+      console.log('UseSceneEvent addEventListerner:', cbid, scene_id);
     })();
 
     return () => {
-      console.log('UseSceneEvent removeListerner:', cbid);
-	  cuemol_worker.removeListener(cbid);
+      console.log('UseSceneEvent removeEventListerner:', cbid);
+	  cuemol_worker.removeEventListener(cbid);
     };
   }, [view_id]);
 }

@@ -1,4 +1,4 @@
-import React, { useRef, forwardRef, useLayoutEffect } from 'react';
+import React, { useRef, useLayoutEffect } from 'react';
 import styles from './MolView.css';
 import { useMolView } from './hooks/useMolView.jsx';
 import { useCueMol } from './hooks/useCueMol.jsx';
@@ -13,7 +13,7 @@ function mergeRefs(ref1, ref2) {
 
 export const MolView = () => {
   const canvasRef = useRef(null);
-  const { molViewID, setMolViewID } = useMolView();
+  const { molViewID, molViewTabs, addMolView, setMolViewID } = useMolView();
   const { cueMolReady } = useCueMol();
 
   useLayoutEffect(() => {
@@ -24,8 +24,9 @@ export const MolView = () => {
         console.log('create scene: ', scene_id, view_id);
         const dpr = window.devicePixelRatio || 1;
         await cuemol_worker.bindCanvas(canvasRef.current, view_id, dpr);
-        setMolViewID(view_id);
-        console.log('useLayoutEffect setMolViewID', molViewID, setMolViewID);
+        addMolView(`Scene ${scene_id}`, view_id);
+        // setMolViewID(view_id);
+        console.log('useLayoutEffect setMolViewID', molViewID);
 
         // TODO: move to elsewhere??
         await cuemol_worker.loadTestPDB(scene_id, view_id);
@@ -34,6 +35,17 @@ export const MolView = () => {
     }
   }, [cueMolReady]);
 
+  // useLayoutEffect(() => {
+  //   console.log('molViewTabs changed', molViewTabs);
+  //   const activeTab = molViewTabs.filter( x => x.active );
+  //   if (activeTab.length==1 && !activeTab[0].bound) {
+  //     ( async () => {
+  //       const view_id = activeTab[0].view_id;
+  //       await cuemol_worker.addView(view_id);
+  //     })();
+  //   }
+  // }, [molViewTabs]);
+
   useLayoutEffect(() => {
     const dpr = window.devicePixelRatio || 1;
     const resizeObserver = new ResizeObserver((_) => {
@@ -41,7 +53,6 @@ export const MolView = () => {
         let { width, height } = canvasRef.current.getBoundingClientRect();
         console.log('canvas size:', height, width);
         cuemol_worker.resized(molViewID, width, height, dpr);
-        // cuemol_worker.resized(molViewID, 100, 100, dpr);
       }
     });
     resizeObserver.observe(canvasRef.current);
