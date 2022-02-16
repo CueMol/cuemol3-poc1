@@ -35,16 +35,16 @@ export const MolView = () => {
     }
   }, [cueMolReady]);
 
-  // useLayoutEffect(() => {
-  //   console.log('molViewTabs changed', molViewTabs);
-  //   const activeTab = molViewTabs.filter( x => x.active );
-  //   if (activeTab.length==1 && !activeTab[0].bound) {
-  //     ( async () => {
-  //       const view_id = activeTab[0].view_id;
-  //       await cuemol_worker.addView(view_id);
-  //     })();
-  //   }
-  // }, [molViewTabs]);
+  useLayoutEffect(() => {
+    console.log('molViewTabs changed', molViewTabs);
+    const activeTab = molViewTabs.filter( x => x.active );
+    if (activeTab.length==1) {
+      ( async () => {
+        const view_id = activeTab[0].view_id;
+        await cuemol_worker.activateView(null, view_id);
+      })();
+    }
+  }, [molViewTabs]);
 
   useLayoutEffect(() => {
     const dpr = window.devicePixelRatio || 1;

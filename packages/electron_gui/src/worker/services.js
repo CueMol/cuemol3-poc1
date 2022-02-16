@@ -24,6 +24,7 @@ export class WorkerService {
       'create-scene-view': this.createSceneView,
       'bind-canvas': this.bindCanvas,
       'add-view': this.addView,
+      'activate-view': this.activateView,
       'resized': this.resized,
       'mouse-down': this.mouseDown,
       'mouse-up': this.mouseUp,
@@ -100,8 +101,7 @@ export class WorkerService {
   bindCanvas(canvas, view_id, dpr) {
     console.log('bindCanvas:', canvas, view_id, dpr);
     this.gfx_mgr.bindCanvas(canvas, view_id, dpr);
-    this.gfx_mgr.setUpdateView(view_id);
-    // this._startAnimationFrame(view_id);
+    // this.gfx_mgr.setUpdateView(view_id);
     return true;
   }
   
@@ -109,9 +109,13 @@ export class WorkerService {
     console.log('addView:', canvas, view_id, dpr);
     // TODO: check target canvas consistency
     this.gfx_mgr.addView(view_id, dpr);
-    this.gfx_mgr.setUpdateView(view_id);
-    // this._startAnimationFrame(view_id);
+    // this.gfx_mgr.setUpdateView(view_id);
     return true;
+  }
+
+  activateView(canvas, view_id) {
+    // TODO: check target canvas consistency
+    this.gfx_mgr.setUpdateView(view_id);
   }
 
   resized(view_id, w, h, dpr) {
@@ -120,7 +124,7 @@ export class WorkerService {
     this.gfx_mgr._canvas.height = h * dpr;
     view.sizeChanged(w, h);
     view.invalidate();
-    view.checkAndUpdate();
+    // view.checkAndUpdate();
   }
 
   mouseDown(view_id, event) {
