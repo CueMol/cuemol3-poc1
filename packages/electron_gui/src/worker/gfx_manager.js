@@ -41,11 +41,15 @@ export class GfxManager {
     this.bound_views.push(view_id);
   }
 
-  addView(view_id) {
+  addView(view_id, dpr) {
     if (this._canvas === null) {
       throw Error('not bound to canvas');
     }
     const view = this._sceMgr.getView(view_id);
+    if (dpr!==null) {
+      console.log('addView dpr=', dpr);
+      view.setSclFac(dpr, dpr);
+    }
     this.cuemol.internal.bindPeer(view._wrapped, this);
     this.bound_views.push(view_id);
   }

@@ -8,7 +8,7 @@ import "allotment/dist/style.css";
 import { useMolView } from './hooks/useMolView.jsx';
 import { cuemol_worker } from './cuemol_worker';
 
-const { ipcOn, ipcRemoveListener } = window.myAPI;
+const { ipcOn } = window.myAPI;
 
 export function App() {
   const { molViewID, addMolView } = useMolView();
@@ -16,16 +16,17 @@ export function App() {
   useEffect(() => {
     if (molViewID === null) return null;
 
-    async function onOpenFile(_, message) {
+    const onOpenFile = async (message) => {
       console.log('ipcRenderer.on: ', message);
       const scene_id = await cuemol_worker.getSceneByView(molViewID);
       let file_path = message[0];
       cuemol_worker.openPDBFile(scene_id, file_path);
-    }
-    ipcOn('open-file', onOpenFile);
-
+    };
+    const remove_fn = ipcOn('open-file', onOpenFile);
+    console.log('open-file listener added');
     return () => {
-      ipcRemoveListener('open-file', onOpenFile);
+      remove_fn();
+      console.log('open-file listener removed');
     };
   }, [molViewID]);
 
@@ -34,14 +35,15 @@ export function App() {
       const [scene_id, view_id] = await cuemol_worker.createScene();
       console.log('create scene: ', scene_id, view_id);
       addMolView(`Scene ${scene_id}`, view_id);
-      cuemol_worker.addView(null, view_id);
+      const dpr = window.devicePixelRatio || 1;
+      cuemol_worker.addView(null, view_id, dpr);
       console.log('onNewScene called', scene_id);
     }
 
-    ipcOn('new-scene', onNewScene);
+    const remove_fn = ipcOn('new-scene', onNewScene);
 
     return () => {
-      ipcRemoveListener('new-scene', onNewScene);
+      remove_fn();
     };
   }, []);
 

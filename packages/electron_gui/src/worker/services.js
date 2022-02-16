@@ -105,10 +105,10 @@ export class WorkerService {
     return true;
   }
   
-  addView(canvas, view_id) {
-    console.log('addView:', canvas, view_id);
+  addView(canvas, view_id, dpr) {
+    console.log('addView:', canvas, view_id, dpr);
     // TODO: check target canvas consistency
-    this.gfx_mgr.addView(view_id);
+    this.gfx_mgr.addView(view_id, dpr);
     this.gfx_mgr.setUpdateView(view_id);
     // this._startAnimationFrame(view_id);
     return true;
@@ -120,7 +120,7 @@ export class WorkerService {
     this.gfx_mgr._canvas.height = h * dpr;
     view.sizeChanged(w, h);
     view.invalidate();
-    // view.checkAndUpdate();
+    view.checkAndUpdate();
   }
 
   mouseDown(view_id, event) {

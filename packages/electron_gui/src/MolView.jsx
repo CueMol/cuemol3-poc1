@@ -51,7 +51,7 @@ export const MolView = () => {
     const resizeObserver = new ResizeObserver((_) => {
       if (molViewID !== null) {
         let { width, height } = canvasRef.current.getBoundingClientRect();
-        console.log('canvas size:', height, width);
+        console.log('canvas size:', height, width, dpr);
         cuemol_worker.resized(molViewID, width, height, dpr);
       }
     });
