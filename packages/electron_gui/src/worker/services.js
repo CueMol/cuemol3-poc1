@@ -23,6 +23,8 @@ export class WorkerService {
       'remove-event-listener': this.removeEventListener,
       'create-scene-view': this.createSceneView,
       'bind-canvas': this.bindCanvas,
+      'add-view': this.addView,
+      'activate-view': this.activateView,
       'resized': this.resized,
       'mouse-down': this.mouseDown,
       'mouse-up': this.mouseUp,
@@ -99,18 +101,21 @@ export class WorkerService {
   bindCanvas(canvas, view_id, dpr) {
     console.log('bindCanvas:', canvas, view_id, dpr);
     this.gfx_mgr.bindCanvas(canvas, view_id, dpr);
-    this._startAnimationFrame(view_id);
+    // this.gfx_mgr.setUpdateView(view_id);
     return true;
   }
   
-  _startAnimationFrame(view_id) {
-    let view = this.sceMgr.getView(view_id);
-    const render = () => {
-      view.checkAndUpdate();
-      requestAnimationFrame(render);
-    };
+  addView(canvas, view_id, dpr) {
+    console.log('addView:', canvas, view_id, dpr);
+    // TODO: check target canvas consistency
+    this.gfx_mgr.addView(view_id, dpr);
+    // this.gfx_mgr.setUpdateView(view_id);
+    return true;
+  }
 
-    render();
+  activateView(canvas, view_id) {
+    // TODO: check target canvas consistency
+    this.gfx_mgr.setUpdateView(view_id);
   }
 
   resized(view_id, w, h, dpr) {

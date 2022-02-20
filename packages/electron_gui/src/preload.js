@@ -4,9 +4,6 @@ const { contextBridge } = require('electron');
 
 /////
 
-let callback_id_gen = 0;
-let callback_dict = {};
-
 contextBridge.exposeInMainWorld('myAPI', {
   ipcRenderer: ipcRenderer,
 
@@ -14,11 +11,15 @@ contextBridge.exposeInMainWorld('myAPI', {
     return (await ipcRenderer.invoke("apppath"));
   },
 
-  ipcOn: (method, handler) => {
-    ipcRenderer.on(method, handler);
+  ipcOn: (channel, handler) => {
+    const func = (_, ...args) => handler(...args);
+    ipcRenderer.on(channel, func);
+    return () => {
+      ipcRenderer.removeListener(channel, func);
+    };
   },
-  ipcRemoveListener: (method, handler) => {
-    ipcRenderer.removeListener(method, handler);
+  ipcRemoveListener: (channel, handler) => {
+    ipcRenderer.removeListener(channel, handler);
   },
 
 });

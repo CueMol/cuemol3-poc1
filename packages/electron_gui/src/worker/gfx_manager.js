@@ -12,9 +12,15 @@ export class GfxManager {
     this._draw_data = {};
     this.cuemol = cuemol;
     this._sceMgr = this.cuemol.getService('SceneManager');
+    this._canvas = null;
+    this._afcbid = null;
+    this.bound_views = [];
   }
   
   bindCanvas(canvas, view_id, dpr=null) {
+    if (this._canvas !== null) {
+      throw Error('already bound to canvas');
+    }
     this._canvas = canvas;
     this._context = canvas.getContext('webgl2');
     const gl = this._context;
@@ -32,6 +38,37 @@ export class GfxManager {
     }
 
     this.cuemol.internal.bindPeer(view._wrapped, this);
+    this.bound_views.push(view_id);
+  }
+
+  addView(view_id, dpr) {
+    if (this._canvas === null) {
+      throw Error('not bound to canvas');
+    }
+    const view = this._sceMgr.getView(view_id);
+    if (dpr!==null) {
+      console.log('addView dpr=', dpr);
+      view.setSclFac(dpr, dpr);
+    }
+    this.cuemol.internal.bindPeer(view._wrapped, this);
+    this.bound_views.push(view_id);
+  }
+  
+  removeView(view_id) {
+    // TODO: impl
+    this.bound_views = this.bound_views.filter(x => x!==view_id);
+  }
+
+  setUpdateView(view_id) {
+    if (!this.bound_views.includes(view_id))
+      throw Error();
+    this._afcbid && cancelAnimationFrame(this._afcbid);
+    let view = this._sceMgr.getView(view_id);
+    const render = () => {
+      view.checkAndUpdate();
+      this._afcbid = requestAnimationFrame(render);
+    };
+    render();
   }
 
   //////////
@@ -52,7 +89,7 @@ export class GfxManager {
   createShader(name, data) {
     const gl = this._context;
     if (name in this._prog_data) {
-      // console.log(`name ${name} already exists`);
+      console.log(`CreateShader name ${name} already exists --> reuse`);
       // return false;
       return true;
     }

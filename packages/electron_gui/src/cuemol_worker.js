@@ -125,6 +125,14 @@ class CueMolWorker {
     return await this.invokeWorkerWithTransfer('bind-canvas', offscreen, offscreen, view_id, dpr);
   }
 
+  async addView(canvas_id, view_id, dpr=null) {
+    return await this.invokeWorker('add-view', canvas_id, view_id, dpr);
+  }
+
+  async activateView(canvas_id, view_id) {
+    return await this.invokeWorker('activate-view', canvas_id, view_id);
+  }
+
   async loadTestPDB(scene_id, view_id) {
     return await this.invokeWorker('load-test-pdb', scene_id, view_id);
   }
