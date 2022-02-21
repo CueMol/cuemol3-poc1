@@ -1,10 +1,10 @@
 import { GfxManager } from './gfx_manager';
-console.log('worker thread launched');
+// console.log('worker thread launched');
 const core = require('@cuemol/core');
-console.log('core:', core);
+// console.log('core:', core);
 const { createCueMol } = core;
 
-const makeModif = (event) => {
+const makeModif = (event: any): number => {
   let modif = event.buttons;
   if (event.ctrlKey) {
     modif += 32;
@@ -15,7 +15,17 @@ const makeModif = (event) => {
   return modif;
 };
 
+type ServiceMethod = (...args: any[]) => any;
+
 export class WorkerService {
+
+  private _methods : {[key: string]: ServiceMethod};
+  private cuemol: any;
+  private _gfx_mgr: GfxManager|null = null;
+  private sceMgr: any;
+  private evtMgr: any;
+  private cmdMgr: any;
+
   constructor() {
     this._methods = {
       'init-cuemol': this.initCueMol,
@@ -37,9 +47,9 @@ export class WorkerService {
     };
   }
 
-  invoke(data) {
-    const [method, seqno, ...args] = data;
-    if (!method in this._methods) {
+  invoke(method: string, seqno: number, args: any[]) : void {
+    // const [method, seqno, ...args] = data;
+    if (!(method in this._methods)) {
       console.log('unknown method:', method);
       postMessage([method, seqno, false]);
       return;
@@ -60,9 +70,16 @@ export class WorkerService {
     
   }
 
-  initCueMol(load_path) {
+  get gfx_mgr() : GfxManager {
+    if (this._gfx_mgr === null) {
+      throw Error("not initialized");
+    }
+    return this._gfx_mgr;
+  }
+
+  initCueMol(load_path: string) : boolean {
     this.cuemol = createCueMol(load_path);
-    this.gfx_mgr = new GfxManager(this.cuemol);
+    this._gfx_mgr = new GfxManager(this.cuemol);
     this.sceMgr = this.cuemol.getService('SceneManager');
     this.evtMgr = this.cuemol.getService('ScrEventManager');
     this.cmdMgr = this.cuemol.getService('CmdMgr');
@@ -78,18 +95,18 @@ export class WorkerService {
     return true;
   }
   
-  addEventListener(aCatStr, aSrcType, aEvtType, aSrcID) {
+  addEventListener(aCatStr: string, aSrcType: any, aEvtType: any, aSrcID: number) : number {
     const slot_id = this.evtMgr.append(aCatStr, aSrcType, aEvtType, aSrcID);
     console.log('addEventListener OK slot_id=', slot_id);
     return slot_id;
   }
 
-  removeEventListener(nID) {
+  removeEventListener(nID: number) : any {
     const result = this.evtMgr.remove(nID);
     return result;
   }
 
-  createSceneView(sceneName, viewName) {
+  createSceneView(sceneName: string, viewName: string) : [number, number] {
     const scene = this.sceMgr.createScene();
     scene.setName(sceneName);
     let view = scene.createView();
@@ -98,14 +115,14 @@ export class WorkerService {
     return [scene.getUID(), view.getUID()];
   }
 
-  bindCanvas(canvas, view_id, dpr) {
+  bindCanvas(canvas: any, view_id: number, dpr: number) : boolean{
     console.log('bindCanvas:', canvas, view_id, dpr);
     this.gfx_mgr.bindCanvas(canvas, view_id, dpr);
     // this.gfx_mgr.setUpdateView(view_id);
     return true;
   }
   
-  addView(canvas, view_id, dpr) {
+  addView(canvas: any, view_id: number, dpr: number) : boolean {
     console.log('addView:', canvas, view_id, dpr);
     // TODO: check target canvas consistency
     this.gfx_mgr.addView(view_id, dpr);
@@ -113,21 +130,21 @@ export class WorkerService {
     return true;
   }
 
-  activateView(canvas, view_id) {
+  activateView(canvas: any, view_id: number) : void {
     // TODO: check target canvas consistency
     this.gfx_mgr.setUpdateView(view_id);
   }
 
-  resized(view_id, w, h, dpr) {
+  resized(view_id: number, w: number, h: number, dpr: number) : void{
     const view = this.sceMgr.getView(view_id);
-    this.gfx_mgr._canvas.width = w * dpr;
-    this.gfx_mgr._canvas.height = h * dpr;
+    this.gfx_mgr.canvas.width = w * dpr;
+    this.gfx_mgr.canvas.height = h * dpr;
     view.sizeChanged(w, h);
     view.invalidate();
     // view.checkAndUpdate();
   }
 
-  mouseDown(view_id, event) {
+  mouseDown(view_id: number, event: any) : void {
     const view = this.sceMgr.getView(view_id);
     const modif = makeModif(event);
     view.onMouseDown(
@@ -139,7 +156,7 @@ export class WorkerService {
     );
   }
 
-  mouseUp(view_id, event) {
+  mouseUp(view_id: number, event: any) : void {
     let view = this.sceMgr.getView(view_id);
     let modif = makeModif(event);
     view.onMouseUp(
@@ -151,7 +168,7 @@ export class WorkerService {
     );
   }
   
-  mouseMove(view_id, event) {
+  mouseMove(view_id: number, event: any) : void {
     let view = this.sceMgr.getView(view_id);
     let modif = makeModif(event);
     view.onMouseMove(
@@ -163,7 +180,7 @@ export class WorkerService {
     );
   }
 
-  loadTestPDB(scene_id, view_id) {
+  loadTestPDB(scene_id: number, view_id: number) : boolean {
     let scene = this.sceMgr.getScene(scene_id);
     let view = this.sceMgr.getView(view_id);
     let path = this.sceMgr.convPath('%%CONFDIR%%/1CRN.pdb');
@@ -190,14 +207,14 @@ export class WorkerService {
     return true;
   }
 
-  startLogger() {
+  startLogger() : string {
     const logMgr = this.cuemol.getService("MsgLog");
     const accumMsg = logMgr.getAccumMsg();
     logMgr.removeAccumMsg();
     return accumMsg;
   }
 
-  getSceneByView(view_id) {
+  getSceneByView(view_id: number) : number {
     if (view_id === null) {
       throw new Error('view_id is null');
     }
@@ -208,14 +225,14 @@ export class WorkerService {
     return result;
   }
 
-  getSceneData(scene_id) {
+  getSceneData(scene_id: number) : [object] {
     const scene = this.sceMgr.getScene(scene_id);
     const json_str = scene.getSceneDataJSON();
     console.log('getSceneData JSON str=', json_str);
     return [JSON.parse(json_str)];
   }
 
-  openPDBFile(scene_id, file_path) {
+  openPDBFile(scene_id: number, file_path: string) : [number, number] {
     const scene = this.sceMgr.getScene(scene_id);
 
     let load_object = this.cmdMgr.getCmd('load_object');

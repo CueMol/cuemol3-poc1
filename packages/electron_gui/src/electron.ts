@@ -1,7 +1,6 @@
-'use strict';
+import { app, Menu, BrowserWindow, dialog, ipcMain } from "electron";
+import path from "path";
 
-const path = require('path');
-const { app, Menu, BrowserWindow, dialog, ipcMain } = require('electron');
 const isMac = process.platform === 'darwin';
 console.log(`isMac: ${isMac}`);
 console.log('app.getAppPath():', app.getAppPath());
@@ -30,7 +29,7 @@ function closeTab() {
   mainWindow.webContents.send('close-tab');
 }
 
-const template = [
+const template: any[] = [
   ...(isMac
     ? [
         {

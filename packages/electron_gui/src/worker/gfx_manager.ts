@@ -1,23 +1,29 @@
 
 export class GfxManager {
-  constructor(cuemol) {
-    // for program object
-    this._prog_data = {};
+  // for program object
+  private _prog_data: any = {};
 
-    // common UBO info
-    this._mvp_mat_loc = 0;
-    this._mat_ubo = null;
+  // common UBO info
+  private _mvp_mat_loc: number = 0;
+  private _mat_ubo: any = null;
+  
+  // for VBOs
+  private _draw_data: any = {};
 
-    // for VBOs
-    this._draw_data = {};
+  private cuemol: any;
+  private _sceMgr: any;
+  private _canvas: any = null;
+  private _afcbid: any = null;
+  private bound_views: any = [];
+
+  private _context: any;
+
+  constructor(cuemol: any) {
     this.cuemol = cuemol;
     this._sceMgr = this.cuemol.getService('SceneManager');
-    this._canvas = null;
-    this._afcbid = null;
-    this.bound_views = [];
   }
   
-  bindCanvas(canvas, view_id, dpr=null) {
+  bindCanvas(canvas: any, view_id: number, dpr: number|null=null) : void {
     if (this._canvas !== null) {
       throw Error('already bound to canvas');
     }
@@ -41,7 +47,11 @@ export class GfxManager {
     this.bound_views.push(view_id);
   }
 
-  addView(view_id, dpr) {
+  get canvas() : any {
+    return this._canvas;
+  }
+
+  addView(view_id: number, dpr: number) : void {
     if (this._canvas === null) {
       throw Error('not bound to canvas');
     }
@@ -54,12 +64,12 @@ export class GfxManager {
     this.bound_views.push(view_id);
   }
   
-  removeView(view_id) {
+  removeView(view_id: number) : void {
     // TODO: impl
     this.bound_views = this.bound_views.filter(x => x!==view_id);
   }
 
-  setUpdateView(view_id) {
+  setUpdateView(view_id: number) : void {
     if (!this.bound_views.includes(view_id))
       throw Error();
     this._afcbid && cancelAnimationFrame(this._afcbid);
@@ -74,7 +84,7 @@ export class GfxManager {
   //////////
   // Program objects
 
-  toShaderTypeID(name) {
+  toShaderTypeID(name: string) : any {
     const gl = this._context;
     if (name === 'vertex') {
       return gl.VERTEX_SHADER;
@@ -86,7 +96,7 @@ export class GfxManager {
   }
 
   /// API
-  createShader(name, data) {
+  createShader(name: string, data: {[key: string]: string}) : boolean {
     const gl = this._context;
     if (name in this._prog_data) {
       console.log(`CreateShader name ${name} already exists --> reuse`);
@@ -130,9 +140,9 @@ export class GfxManager {
   }
 
   /// API
-  deleteShader(shader_name) {
+  deleteShader(shader_name: string) : boolean {
     const gl = this._context;
-    if (!shader_name in this._prog_data) {
+    if (!(shader_name in this._prog_data)) {
       console.log(`name ${shader_name} not defined`);
       return false;
     }
@@ -141,19 +151,19 @@ export class GfxManager {
   }
 
   /// API
-  enableShader(shader_name) {
+  enableShader(shader_name: string) : void {
     const gl = this._context;
     gl.useProgram(this._prog_data[shader_name]);
   }
 
   /// API
-  disableShader() {
+  disableShader() : void {
     const gl = this._context;
     gl.useProgram(null);
   }
 
   /// API
-  clear(r, g, b) {
+  clear(r: number, g: number, b: number) : void {
     const gl = this._context;
     gl.clearColor(r, g, b, 1);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -162,7 +172,7 @@ export class GfxManager {
   //////////
   // Projection uniforms
 
-  checkMvpMatUBO() {
+  checkMvpMatUBO() : void {
     if (this._mat_ubo === null) {
       // Create UBO
       const gl = this._context;
@@ -177,7 +187,7 @@ export class GfxManager {
   }
 
   /// API
-  setUpModelMat(array_buf) {
+  setUpModelMat(array_buf: any) : void {
     this.checkMvpMatUBO();
     // transfer UBO
     const gl = this._context;
@@ -187,7 +197,7 @@ export class GfxManager {
   }
 
   /// API
-  setUpProjMat(cx, cy, array_buf) {
+  setUpProjMat(cx: number, cy: number, array_buf: any) : void {
     this.checkMvpMatUBO();
     // transfer UBO
     const gl = this._context;
@@ -201,7 +211,8 @@ export class GfxManager {
   // Buffer
 
   /// API
-  createBuffer(name, nsize, num_elems, nsize_index, elem_info_str) {
+  createBuffer(name: string, nsize: number, num_elems: number,
+               nsize_index: number, elem_info_str: string) : boolean {
     if (name in this._draw_data) {
       console.log(`name ${name} already exists`);
       return false;
@@ -257,7 +268,8 @@ export class GfxManager {
   }
 
   /// API
-  drawBuffer(id, nmode, nelems, array_buf, index_buf, isUpdated) {
+  drawBuffer(id: number, nmode: number, nelems: number,
+             array_buf: any, index_buf: any, isUpdated: boolean) : void {
     const gl = this._context;
     const obj = this._draw_data[id];
     if (isUpdated) {
@@ -294,10 +306,10 @@ export class GfxManager {
   }
 
   /// API
-  deleteBuffer(id) {
+  deleteBuffer(id: number) : boolean {
     const gl = this._context;
 
-    if (!id in this._draw_data) return false;
+    if (!(id in this._draw_data)) return false;
     const obj = this._draw_data[id];
     if (obj === null) return false;
 
