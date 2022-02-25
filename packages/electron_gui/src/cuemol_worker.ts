@@ -1,23 +1,30 @@
 
+// @ts-ignore
 const { getAppPathInfo } = window.myAPI;
 
-function makeMethodSeq(method, seqno) {
+function makeMethodSeq(method: string, seqno: number) : string {
   return method + '.' + seqno.toString();
 }
 
 class CueMolWorker {
 
+  private _seqno: number = 0;
+  private _worker: Worker;
+  private _worker_onmessage_dict: {[key: string]: any} = {};
+  private _slot: {[key: string]: any} = {};
+
   constructor() {
-    this._seqno = 0;
+    // this._seqno = 0;
     console.log('launch worker...');
     this._worker = new Worker('./worker.js');
     console.log('launch worker OK', this._worker);
 
-    this._worker_onmessage_dict = {};
+    // this._worker_onmessage_dict = {};
 
     this._worker.onmessage = (event) => {
       if (event.data[0] === 'event-notify') {
-        const [, ...evtargs] = event.data;
+        // const [, ...evtargs] = event.data;
+        const evtargs = event.data.slice(1) as [number, string, number, number, number, string];
         try {
           this.eventNotify(...evtargs);
         } catch (e) {
@@ -34,30 +41,30 @@ class CueMolWorker {
       }
     };
 
-    this._slot = {};
+    // this._slot = {};
   }
 
-  postMessage(method, seq, args, xfer=null) {
+  postMessage(method: string, seq: number, args: any[], xfer=null) {
     if (xfer === null)
       this._worker.postMessage([method, seq, ...args]);
     else
       this._worker.postMessage([method, seq, ...args], [xfer]);
   }
 
-  getSeqNo() {
+  getSeqNo() : number {
     this._seqno ++;
     return this._seqno; 
   }
 
-  addListener(method, seqno, handler) {
+  addListener(method:string, seqno:number, handler:any) : void {
     const method_seq = makeMethodSeq(method, seqno);
     this._worker_onmessage_dict[method_seq] = handler;
   }
 
-  async invokeWorker(method, ...args) {
+  async invokeWorker(method: string, ...args: any[]) : Promise<any[]> {
     const cur_seq = this.getSeqNo(); 
-    let promise = new Promise((resolve, reject) => {
-      this.addListener(method, cur_seq, (result, ...msgargs) => {
+    let promise = new Promise<any[]>((resolve, reject) => {
+      this.addListener(method, cur_seq, (result: boolean, ...msgargs: any[]): void => {
         if (result) {
           resolve(msgargs);
         } else {
@@ -69,10 +76,10 @@ class CueMolWorker {
     return promise;
   }
 
-  async invokeWorkerWithTransfer(method, transfer, ...args) {
+  async invokeWorkerWithTransfer(method, transfer, ...args) : Promise<any[]>  {
     const cur_seq = this.getSeqNo(); 
-    let promise = new Promise((resolve, reject) => {
-      this.addListener(method, cur_seq, (result, ...msgargs) => {
+    let promise = new Promise<any[]>((resolve, reject) => {
+      this.addListener(method, cur_seq, (result: boolean, ...msgargs: any[]): void => {
         if (result) {
           resolve(msgargs);
         } else {
@@ -171,9 +178,9 @@ class CueMolWorker {
     return await this.invokeWorker('open-pdb-file', scene_id, file_path);
   }
 
-  eventNotify(slot, category, srcCat, evtType, srcUID, evtStr) {
-    let json = null;
-    let jobj = null;
+  eventNotify(slot: number, category: string, srcCat:number, evtType:number, srcUID:number, evtStr:string) {
+    let json: string|null = null;
+    let jobj: any = null;
 
     // console.log('notify called:', slot, category, srcCat, evtType, srcUID, evtStr);
     

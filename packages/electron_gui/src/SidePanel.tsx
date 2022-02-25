@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useLayoutEffect } from 'react';
 import styles from './SidePanel.css';
-import { useMolView } from './hooks/useMolView.jsx';
-import { SceneTree, defaultTree, createSceneTreeByViewID } from './SceneTree.jsx';
+import { useMolView } from './hooks/useMolView';
+import { SceneTree, defaultTree, createSceneTreeByViewID } from './SceneTree';
 import * as event from './event';
 import { cuemol_worker } from './cuemol_worker';
 

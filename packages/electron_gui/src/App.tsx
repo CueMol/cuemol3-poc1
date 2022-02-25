@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
 import styles from './App.css';
-import { SidePanel } from './SidePanel.jsx';
-import { TabMolView } from './TabMolView.jsx';
-import { LogView } from './LogView.jsx';
+import { SidePanel } from './SidePanel';
+import { TabMolView } from './TabMolView';
+import { LogView } from './LogView';
 import { Allotment } from "allotment";
 import "allotment/dist/style.css";
-import { useMolView } from './hooks/useMolView.jsx';
+import { useMolView } from './hooks/useMolView';
 import { cuemol_worker } from './cuemol_worker';
 
 const { ipcOn } = window.myAPI;

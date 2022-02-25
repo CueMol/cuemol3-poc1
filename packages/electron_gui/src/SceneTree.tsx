@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { ControlledTreeEnvironment, Tree } from 'react-complex-tree';
 import 'react-complex-tree/lib/style.css';
-// import { getSceneByViewID } from './utils';
 import { cuemol_worker } from './cuemol_worker';
 
 

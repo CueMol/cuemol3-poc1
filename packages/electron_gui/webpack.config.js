@@ -33,7 +33,7 @@ const mainConfig = {
 
 const rendererConfig = {
   mode: 'development',
-  entry: './src/index.jsx',
+  entry: './src/index.tsx',
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'index.js',
@@ -46,6 +46,14 @@ const rendererConfig = {
   ],
   module: {
     rules: [
+      {
+        test: /\.ts(x?)$/,
+        include: /src/,
+        resolve: {
+          extensions: [".ts", ".tsx", ".js"],
+        },
+        use: [{ loader: "ts-loader" }],
+      },
       {
         test: /\.jsx$/,
         exclude: /(node_modules)/,
