@@ -10,16 +10,16 @@ import { cuemol_worker } from './cuemol_worker';
 
 const { ipcOn } = window.myAPI;
 
-export function App() {
+export const App: React.FC = () => {
   const { molViewID, addMolView } = useMolView();
 
   useEffect(() => {
     if (molViewID === null) return null;
 
-    const onOpenFile = async (message) => {
-      console.log('ipcRenderer.on: ', message);
-      const scene_id = await cuemol_worker.getSceneByView(molViewID);
-      let file_path = message[0];
+    const onOpenFile = async (paths: string[]) => {
+      console.log('ipcRenderer.on: ', paths);
+      const scene_id: number = await cuemol_worker.getSceneByView(molViewID);
+      let file_path = paths[0];
       cuemol_worker.openPDBFile(scene_id, file_path);
     };
     const remove_fn = ipcOn('open-file', onOpenFile);
