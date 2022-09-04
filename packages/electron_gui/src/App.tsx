@@ -35,7 +35,7 @@ export function App() {
       const [scene_id, view_id] = await cuemol_worker.createScene();
       console.log('create scene: ', scene_id, view_id);
       addMolView(`Scene ${scene_id}`, view_id);
-      const dpr = window.devicePixelRatio || 1;
+      const dpr: number = window.devicePixelRatio || 1;
       cuemol_worker.addView(null, view_id, dpr);
       console.log('onNewScene called', scene_id);
     }

@@ -7,7 +7,7 @@ export function useCueMol() {
   return useContext(CueMolContext);
 }
 
-export function CueMolProvider({ children }) {
+export function CueMolProvider({ children }: any) {
   const [ cueMolReady, setCueMolReady ] = useState(false);
 
   useLayoutEffect( () => {

@@ -1,9 +1,9 @@
 import React, { useEffect, useRef } from 'react';
-import { MolView } from './MolView.jsx';
+import { MolView } from './MolView';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 import styles from './TabMolView.css';
-import { useMolView } from './hooks/useMolView.jsx';
+import { useMolView } from './hooks/useMolView';
 
 // <button className={styles.tabs}>xxx</button>
 

@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import * as event from '../event';
 import { cuemol_worker } from '../cuemol_worker';
-import { useCueMol } from './useCueMol.jsx';
+import { useCueMol } from './useCueMol';
 
 export function useLogEvent(callback) {
   const { cueMolReady } = useCueMol();
