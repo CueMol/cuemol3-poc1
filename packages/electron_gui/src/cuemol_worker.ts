@@ -157,9 +157,9 @@ class CueMolWorker {
   }
 
   async addEventListener(aCatStr: string, aSrcType: number, aEvtType: number, aSrcID: number, aObs): Promise<number> {
-    const xxx = await this.invokeWorker('add-event-listener',
-                                        aCatStr, aSrcType, aEvtType, aSrcID);
-    const slot_id: number = xxx[0];
+    const [slot_id, ]: [number, any] = await this.invokeWorker('add-event-listener',
+                                                                  aCatStr, aSrcType, aEvtType, aSrcID) as [number, any];
+    // const slot_id: number = xxx[0];
     console.log("event listener registered: <"+aCatStr+">, id="+slot_id);
     this._slot[slot_id.toString()] = aObs;
     return slot_id;
