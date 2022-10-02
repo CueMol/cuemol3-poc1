@@ -1,25 +1,25 @@
 import React, { useEffect } from 'react';
 import styles from './App.css';
-import { SidePanel } from './SidePanel.jsx';
-import { TabMolView } from './TabMolView.jsx';
-import { LogView } from './LogView.jsx';
+import { SidePanel } from './SidePanel';
+import { TabMolView } from './TabMolView';
+import { LogView } from './LogView';
 import { Allotment } from "allotment";
 import "allotment/dist/style.css";
-import { useMolView } from './hooks/useMolView.jsx';
+import { useMolView } from './hooks/useMolView';
 import { cuemol_worker } from './cuemol_worker';
 
 const { ipcOn } = window.myAPI;
 
-export function App() {
+export const App: React.FC = () => {
   const { molViewID, addMolView } = useMolView();
 
   useEffect(() => {
     if (molViewID === null) return null;
 
-    const onOpenFile = async (message) => {
-      console.log('ipcRenderer.on: ', message);
-      const scene_id = await cuemol_worker.getSceneByView(molViewID);
-      let file_path = message[0];
+    const onOpenFile = async (paths: string[]) => {
+      console.log('ipcRenderer.on: ', paths);
+      const scene_id: number = await cuemol_worker.getSceneByView(molViewID);
+      let file_path = paths[0];
       cuemol_worker.openPDBFile(scene_id, file_path);
     };
     const remove_fn = ipcOn('open-file', onOpenFile);
@@ -35,7 +35,7 @@ export function App() {
       const [scene_id, view_id] = await cuemol_worker.createScene();
       console.log('create scene: ', scene_id, view_id);
       addMolView(`Scene ${scene_id}`, view_id);
-      const dpr = window.devicePixelRatio || 1;
+      const dpr: number = window.devicePixelRatio || 1;
       cuemol_worker.addView(null, view_id, dpr);
       console.log('onNewScene called', scene_id);
     }

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { ControlledTreeEnvironment, Tree } from 'react-complex-tree';
 import 'react-complex-tree/lib/style.css';
-// import { getSceneByViewID } from './utils';
 import { cuemol_worker } from './cuemol_worker';
 
 
@@ -36,11 +35,11 @@ const convTree = (data) => {
   };
 
   // objects and renderers
-  let objItems = [];
+  let objItems: string[] = [];
   for (let i=1; i<nlen; ++i) {
     const obj = data[i];
 
-    let rendInds = [];
+    let rendInds: string[] = [];
     if (obj.rends && obj.rends.length>0) {
       const njlen = obj.rends.length;
       for (let j=0; j<njlen; ++j) {

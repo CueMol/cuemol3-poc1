@@ -1,13 +1,14 @@
 import React, { useEffect, useRef } from 'react';
-import { MolView } from './MolView.jsx';
+import { MolView } from './MolView';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 import styles from './TabMolView.css';
-import { useMolView } from './hooks/useMolView.jsx';
+import { useMolView } from './hooks/useMolView';
 
 // <button className={styles.tabs}>xxx</button>
 
-export function TabMolView() {
+export const TabMolView: React.FC = () => {
+
   const { molViewTabs, setActiveTab } = useMolView();
   const onSelectFn = (ind, prev_ind, ...args) => {
     console.log('on select called!!!', args);
@@ -32,4 +33,4 @@ export function TabMolView() {
       <MolView className={styles.panel}/>
     </div>
   );
-};
+}

@@ -1,7 +1,7 @@
 import React, { useRef, useLayoutEffect } from 'react';
 import styles from './MolView.css';
-import { useMolView } from './hooks/useMolView.jsx';
-import { useCueMol } from './hooks/useCueMol.jsx';
+import { useMolView } from './hooks/useMolView';
+import { useCueMol } from './hooks/useCueMol';
 import { cuemol_worker } from './cuemol_worker';
 
 function mergeRefs(ref1, ref2) {

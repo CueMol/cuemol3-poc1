@@ -1,6 +1,4 @@
-const { ipcRenderer } = require('electron');
-const { contextBridge } = require('electron');
-
+const { ipcRenderer, contextBridge } = require('electron');
 
 /////
 

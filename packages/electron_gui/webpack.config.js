@@ -4,8 +4,36 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 // import { Configuration } from 'webpack';
 
 const mainConfig = {
+  // mode: "production",
+  mode: "development",
+  entry: "./src/electron.ts",
+  target: "electron-main",
+  module: {
+    rules: [
+      {
+        test: /\.ts$/,
+        include: /src/,
+        resolve: {
+          extensions: [".ts", ".js"],
+        },
+        use: [{ loader: "ts-loader" }],
+      },
+    ],
+  },
+  output: {
+    devtoolModuleFilenameTemplate: "[absolute-resource-path]",
+    path: __dirname + "/dist",
+    filename: "electron.js",
+  },
+  node: {
+    __dirname: false,
+  },
+  // plugins: [new HardSourceWebpackPlugin()],
+};
+
+const rendererConfig = {
   mode: 'development',
-  entry: './src/index.jsx',
+  entry: './src/index.tsx',
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'index.js',
@@ -18,6 +46,14 @@ const mainConfig = {
   ],
   module: {
     rules: [
+      {
+        test: /\.ts(x?)$/,
+        include: /src/,
+        resolve: {
+          extensions: [".ts", ".tsx", ".js"],
+        },
+        use: [{ loader: "ts-loader" }],
+      },
       {
         test: /\.jsx$/,
         exclude: /(node_modules)/,
@@ -50,7 +86,21 @@ const mainConfig = {
 
 const workerConfig = {
   mode: 'development',
-  entry: './src/worker/main.js',
+  entry: './src/worker/main.ts',
+
+  module: {
+    rules: [
+      {
+        test: /\.ts$/,
+        include: /src/,
+        resolve: {
+          extensions: [".ts", ".js"],
+        },
+        use: [{ loader: "ts-loader" }],
+      },
+    ],
+  },
+
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'worker.js',
@@ -64,10 +114,23 @@ const workerConfig = {
 
 const preloadConfig = {
   mode: 'development',
-  entry: './src/preload.js',
+  entry: './src/preload.ts',
+  target: 'electron-preload',
+  module: {
+    rules: [
+      {
+        test: /\.ts$/,
+        include: /src/,
+        resolve: {
+          extensions: [".ts", ".js"],
+        },
+        use: [{ loader: "ts-loader" }],
+      },
+    ],
+  },
   output: {
-    path: path.resolve(__dirname, 'dist'),
-    filename: 'preload.js',
+    path: __dirname + "/dist",
+    filename: "preload.js",
     libraryTarget: 'commonjs2',
   },
   externals: [
@@ -76,5 +139,4 @@ const preloadConfig = {
   devtool: 'inline-source-map',
 };
 
-module.exports = [mainConfig, workerConfig, preloadConfig];
-// export default config;
+module.exports = [mainConfig, rendererConfig, workerConfig, preloadConfig];

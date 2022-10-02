@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import * as event from '../event';
 import { cuemol_worker } from '../cuemol_worker';
-import { useCueMol } from './useCueMol.jsx';
+import { useCueMol } from './useCueMol';
 
 export function useLogEvent(callback) {
   const { cueMolReady } = useCueMol();
@@ -16,7 +16,7 @@ export function useLogEvent(callback) {
 
   useEffect(() => {
     if (cueMolReady) {
-      let cbid = null;
+      let cbid: number;
       ( async () => {
         cbid = await cuemol_worker.addEventListener(
           "log",
@@ -31,7 +31,8 @@ export function useLogEvent(callback) {
       })();
         
       return () => {
-	    cuemol_worker.removeEventListener(cbid);
+        if (cbid != undefined)
+	      cuemol_worker.removeEventListener(cbid);
       };
     }
     else {
