@@ -22,6 +22,11 @@ namespace molstr {
   extern void fini();
 }
 
+namespace molvis {
+  extern bool init();
+  extern void fini();
+}
+
 namespace node_jsbr {
 
 using qlib::LString;
@@ -69,6 +74,7 @@ Napi::Value initCueMol(const Napi::CallbackInfo &info)
         qlib::init();
         qsys::init(config.c_str());
         molstr::init();
+        molvis::init();
         init();
 
         // setup timer

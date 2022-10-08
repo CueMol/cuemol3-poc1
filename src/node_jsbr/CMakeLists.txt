@@ -26,7 +26,7 @@ SET(NODE_JSBR_SRCS
   wrapper.cpp
   ElecView.cpp
   ElecDisplayContext.cpp
-  ElecDisplayList.cpp
+  # ElecDisplayList.cpp
   ElecProgramObject.cpp
   ${CMAKE_JS_SRC}
   )
@@ -58,6 +58,7 @@ SET(NODE_JSBR_LINK_LIBRARIES
   qmzlib
   qlib gfx qsys
   molstr
+  molvis
   ${CMAKE_JS_LIB}
   )
 

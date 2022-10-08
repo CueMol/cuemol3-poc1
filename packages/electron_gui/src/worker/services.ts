@@ -193,14 +193,25 @@ export class WorkerService {
     load_object.run();
     let mol = load_object.result_object;
     
-    let new_rend = this.cmdMgr.getCmd('new_renderer');
-    new_rend.target_object = mol;
-    new_rend.renderer_type = 'simple';
-    new_rend.renderer_name = 'simple1';
-    new_rend.recenter_view = true;
-    new_rend.default_style_name = 'DefaultCPKColoring';
-    new_rend.run();
-    
+    {
+      let new_rend = this.cmdMgr.getCmd('new_renderer');
+      new_rend.target_object = mol;
+      new_rend.renderer_type = 'simple';
+      new_rend.renderer_name = 'simple1';
+      new_rend.recenter_view = true;
+      new_rend.default_style_name = 'DefaultCPKColoring';
+      new_rend.run();
+    }
+
+    {
+      let new_rend = this.cmdMgr.getCmd('new_renderer');
+      new_rend.target_object = mol;
+      new_rend.renderer_type = 'ribbon';
+      new_rend.renderer_name = 'ribbon1';
+      new_rend.recenter_view = false;
+      new_rend.default_style_name = 'DefaultCPKColoring';
+      new_rend.run();
+    }
     view.invalidate();
     //view.checkAndUpdate();
 

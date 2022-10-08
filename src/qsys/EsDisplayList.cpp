@@ -158,7 +158,7 @@ void EsDisplayList::loadMatrix(const qlib::Matrix4D &mat)
 
 void EsDisplayList::setPolygonMode(int id)
 {
-    LOG_DPRINTLN("setPolygonMode is not supported (ignored.)");
+    MB_DPRINTLN("setPolygonMode is not supported (ignored.)");
 }
 
 void EsDisplayList::startPoints()
@@ -168,7 +168,7 @@ void EsDisplayList::startPoints()
 
 void EsDisplayList::startPolygon()
 {
-    LOG_DPRINTLN("polygon is not supported (vertex command ignored.)");
+    MB_DPRINTLN("polygon is not supported (vertex command ignored.)");
 }
 
 void EsDisplayList::startLines()

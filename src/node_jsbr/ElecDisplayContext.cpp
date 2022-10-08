@@ -5,7 +5,7 @@
 #include <gfx/DrawAttrArray.hpp>
 #include <qsys/SceneManager.hpp>
 
-#include "ElecDisplayList.hpp"
+// #include "ElecDisplayList.hpp"
 #include "ElecProgramObject.hpp"
 #include "ElecVBOImpl.hpp"
 #include "ElecView.hpp"
