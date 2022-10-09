@@ -3,6 +3,8 @@ const MODEL_MAT_SIZE = 4 * 4 * FLOAT_SIZE;
 const PROJ_MAT_SIZE = 4 * 4 * FLOAT_SIZE;
 const NORM_MAT_SIZE = 4 * 4 * FLOAT_SIZE;
 
+const LIGHT_UBO_SIZE = 4 * FLOAT_SIZE + 4 * FLOAT_SIZE;
+
 export class GfxManager {
   // for program object
   private _prog_data: any = {};
@@ -10,6 +12,9 @@ export class GfxManager {
   // common UBO info
   private _mvp_mat_loc: number = 0;
   private _mat_ubo: any = null;
+
+  private _light_loc: number = 1;
+  private _light_ubo: any = null;
   
   // for VBOs
   private _draw_data: any = {};
@@ -51,6 +56,9 @@ export class GfxManager {
 
     this.cuemol.internal.bindPeer(view._wrapped, this);
     this.bound_views.push(view_id);
+
+    this.createUBO();
+    this.setUpLight();
   }
 
   get canvas() : any {
@@ -85,6 +93,36 @@ export class GfxManager {
       this._afcbid = requestAnimationFrame(render);
     };
     render();
+  }
+
+  //////////
+  // UBO
+
+  // Create UBO
+  createUBO() : void {
+    const gl = this._context;
+
+    // MVP matrix UBO
+    let matrix_ubo = gl.createBuffer();
+    gl.bindBuffer(gl.UNIFORM_BUFFER, matrix_ubo);
+    gl.bufferData(gl.UNIFORM_BUFFER,
+                  MODEL_MAT_SIZE*2 + PROJ_MAT_SIZE,
+                  gl.DYNAMIC_DRAW);
+    gl.bindBufferBase(gl.UNIFORM_BUFFER, this._mvp_mat_loc, matrix_ubo);
+    gl.bindBuffer(gl.UNIFORM_BUFFER, null);
+    this._mat_ubo = matrix_ubo;
+
+    // Lighting UBO
+    let light_ubo = gl.createBuffer();
+    gl.bindBuffer(gl.UNIFORM_BUFFER, light_ubo);
+    gl.bufferData(gl.UNIFORM_BUFFER,
+                  LIGHT_UBO_SIZE,
+                  gl.DYNAMIC_DRAW);
+    gl.bindBufferBase(gl.UNIFORM_BUFFER, this._light_loc, light_ubo);
+    gl.bindBuffer(gl.UNIFORM_BUFFER, null);
+    this._light_ubo = light_ubo;
+
+    console.log('UBO created');
   }
 
   //////////
@@ -143,6 +181,9 @@ export class GfxManager {
     const mvp_mat_index = gl.getUniformBlockIndex(program, 'mvp_matrix');
     gl.uniformBlockBinding(program, mvp_mat_index, this._mvp_mat_loc);
 
+    const light_index = gl.getUniformBlockIndex(program, 'lighting');
+    gl.uniformBlockBinding(program, light_index, this._light_loc);
+
     this._prog_data[name] = program;
 
     this._enable_lighting_loc = gl.getUniformLocation(this._prog_data[name],
@@ -186,25 +227,8 @@ export class GfxManager {
   //////////
   // Projection uniforms
 
-  checkMvpMatUBO() : void {
-    if (this._mat_ubo === null) {
-      // Create UBO
-      const gl = this._context;
-      let matrix_ubo = gl.createBuffer();
-      gl.bindBuffer(gl.UNIFORM_BUFFER, matrix_ubo);
-      gl.bufferData(gl.UNIFORM_BUFFER,
-                    MODEL_MAT_SIZE*2 + PROJ_MAT_SIZE,
-                    gl.DYNAMIC_DRAW);
-      gl.bindBufferBase(gl.UNIFORM_BUFFER, this._mvp_mat_loc, matrix_ubo);
-      gl.bindBuffer(gl.UNIFORM_BUFFER, null);
-      this._mat_ubo = matrix_ubo;
-      console.log('mvp UBO created');
-    }
-  }
-
   /// API
   setUpModelMat(array_buf: any) : void {
-    this.checkMvpMatUBO();
     // transfer UBO
     const gl = this._context;
     gl.bindBuffer(gl.UNIFORM_BUFFER, this._mat_ubo);
@@ -214,12 +238,21 @@ export class GfxManager {
 
   /// API
   setUpProjMat(cx: number, cy: number, array_buf: any) : void {
-    this.checkMvpMatUBO();
     // transfer UBO
     const gl = this._context;
     gl.viewport(0, 0, cx, cy);
     gl.bindBuffer(gl.UNIFORM_BUFFER, this._mat_ubo);
     gl.bufferSubData(gl.UNIFORM_BUFFER, MODEL_MAT_SIZE + 12*FLOAT_SIZE, array_buf);
+    gl.bindBuffer(gl.UNIFORM_BUFFER, null);
+  }
+
+  // lighting uniforms
+  setUpLight() : void {
+    const gl = this._context;
+    let buf = new Float32Array([0.2, 0.8, 0.4, 32.0,
+                                1.0, 1.0, 1.5, 0.0]);
+    gl.bindBuffer(gl.UNIFORM_BUFFER, this._light_ubo);
+    gl.bufferSubData(gl.UNIFORM_BUFFER, LIGHT_UBO_SIZE, buf);
     gl.bindBuffer(gl.UNIFORM_BUFFER, null);
   }
 
