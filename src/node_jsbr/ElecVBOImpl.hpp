@@ -86,7 +86,7 @@ public:
         }
     }
 
-    void drawBuffer(ElecView *pView, bool isUpdated)
+    void drawBuffer(ElecView *pView, bool isUpdated, bool bLighting)
     {
         auto peer = pView->getPeerObj();
         auto env = peer.Env();
@@ -98,12 +98,14 @@ public:
                 peer,
                 {Napi::String::New(env, m_bufName), Napi::Number::New(env, m_nDrawMode),
                  Napi::Number::New(env, m_nIndexElems), m_arrayBufRef.Value(),
-                 m_indexBufRef.Value(), Napi::Boolean::New(env, isUpdated)});
+                 m_indexBufRef.Value(), Napi::Boolean::New(env, isUpdated),
+                 Napi::Boolean::New(env, bLighting)});
         } else {
             method.Call(peer, {Napi::String::New(env, m_bufName),
                                Napi::Number::New(env, m_nDrawMode),
                                Napi::Number::New(env, m_nElems), m_arrayBufRef.Value(),
-                               env.Null(), Napi::Boolean::New(env, isUpdated)});
+                               env.Null(), Napi::Boolean::New(env, isUpdated),
+                               Napi::Boolean::New(env, bLighting)});
         }
     }
 

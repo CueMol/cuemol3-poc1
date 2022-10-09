@@ -20,8 +20,12 @@ private:
     /// Default program object (shader)
     ElecProgramObject *m_pDefPO;
 
+    bool m_bEnableLighting;
+
 public:
-    ElecDisplayContext() : m_pView(nullptr), m_pDefPO(nullptr) {}
+    ElecDisplayContext() : m_pView(nullptr), m_pDefPO(nullptr), m_bEnableLighting(false)
+    {
+    }
     virtual ~ElecDisplayContext();
 
     void init(ElecView *pView);
@@ -60,6 +64,8 @@ public:
     virtual void end();
 
     //
+
+    virtual void setLighting(bool f);
 
     ///////////////////////////////
     // Shader support

@@ -128,21 +128,23 @@ void ElecView::bindPeer(Napi::Object peer)
     m_peerObjRef = Napi::Persistent(peer);
     auto env = peer.Env();
 
-    constexpr size_t buf_size = 4 * 4;
+    constexpr size_t MODEL_BUF_SIZE = 4 * 4 * sizeof(float);
+    constexpr size_t NORM_BUF_SIZE = 3 * 3 * sizeof(float);
     {
         float *pbuf = &m_modelMat.ai(1);
         Napi::Object array_buf = Napi::ArrayBuffer::New(
-            env, pbuf, buf_size * sizeof(float), [](Napi::Env, void *finalizeData) {
+                                                        env, pbuf, MODEL_BUF_SIZE + NORM_BUF_SIZE, [](Napi::Env, void *finalizeData) {
                 printf("finalizer called for %p\n", finalizeData);
                 // delete [] static_cast<float*>(finalizeData);
             });
         m_modelArrayBuf = Napi::Persistent(array_buf);
     }
 
+    constexpr size_t PROJ_BUF_SIZE = 4 * 4 * sizeof(float);
     {
         float *pbuf = &m_projMat.ai(1);
         Napi::Object array_buf = Napi::ArrayBuffer::New(
-            env, pbuf, buf_size * sizeof(float), [](Napi::Env, void *finalizeData) {
+            env, pbuf, PROJ_BUF_SIZE, [](Napi::Env, void *finalizeData) {
                 printf("finalizer called for %p\n", finalizeData);
                 // delete [] static_cast<float*>(finalizeData);
             });

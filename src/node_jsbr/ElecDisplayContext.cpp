@@ -40,7 +40,7 @@ void ElecDisplayContext::drawElem(const gfx::AbstDrawElem &data)
         pImpl = new ElecVBOImpl(m_pView, name, *pda);
         data.setVBO(pImpl);
     }
-    pImpl->drawBuffer(m_pView, data.isUpdated());
+    pImpl->drawBuffer(m_pView, data.isUpdated(), m_bEnableLighting);
     // printf("ElecDisplayContext::drawElem\n");
     data.setUpdated(false);
 }
@@ -92,5 +92,11 @@ void ElecDisplayContext::startTriangleFan() {}
 void ElecDisplayContext::startQuadStrip() {}
 void ElecDisplayContext::startQuads() {}
 void ElecDisplayContext::end() {}
+
+void ElecDisplayContext::setLighting(bool f)
+{
+    m_bEnableLighting = f;
+}
+
 
 }  // namespace node_jsbr
