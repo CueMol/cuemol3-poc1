@@ -47,6 +47,9 @@ export class GfxManager {
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     gl.enable(gl.BLEND);
 
+    this.createUBO();
+    this.setUpLight();
+
     const view = this._sceMgr.getView(view_id);
     
     if (dpr!==null) {
@@ -57,8 +60,6 @@ export class GfxManager {
     this.cuemol.internal.bindPeer(view._wrapped, this);
     this.bound_views.push(view_id);
 
-    this.createUBO();
-    this.setUpLight();
   }
 
   get canvas() : any {
@@ -180,14 +181,18 @@ export class GfxManager {
     // setup common UBO entries
     const mvp_mat_index = gl.getUniformBlockIndex(program, 'mvp_matrix');
     gl.uniformBlockBinding(program, mvp_mat_index, this._mvp_mat_loc);
+    console.log("mvp_mat_index: "+mvp_mat_index);
+    console.log("this._mvp_mat_loc: "+this._mvp_mat_loc);
 
     const light_index = gl.getUniformBlockIndex(program, 'lighting');
     gl.uniformBlockBinding(program, light_index, this._light_loc);
+    console.log("light_index: "+light_index);
+    console.log("this._light_loc: "+this._light_loc);
+
+    this._enable_lighting_loc = gl.getUniformLocation(program,
+                                                      "enable_lighting");
 
     this._prog_data[name] = program;
-
-    this._enable_lighting_loc = gl.getUniformLocation(this._prog_data[name],
-                                                      "enable_lighting");
 
     return true;
   }
@@ -252,7 +257,7 @@ export class GfxManager {
     let buf = new Float32Array([0.2, 0.8, 0.4, 32.0,
                                 1.0, 1.0, 1.5, 0.0]);
     gl.bindBuffer(gl.UNIFORM_BUFFER, this._light_ubo);
-    gl.bufferSubData(gl.UNIFORM_BUFFER, LIGHT_UBO_SIZE, buf);
+    gl.bufferSubData(gl.UNIFORM_BUFFER, 0, buf);
     gl.bindBuffer(gl.UNIFORM_BUFFER, null);
   }
 
