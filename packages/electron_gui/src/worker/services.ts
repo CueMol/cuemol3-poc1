@@ -189,6 +189,8 @@ export class WorkerService {
     let load_object = this.cmdMgr.getCmd('load_object');
     load_object.target_scene = scene;
     load_object.file_path = path;
+    load_object.options = {"build2ndry": true, "hoge": "moge"};
+    // load_object.options = ["hoge", 123];
     // load_object.object_name ="1CRN.pdb";
     load_object.run();
     let mol = load_object.result_object;
@@ -209,7 +211,7 @@ export class WorkerService {
       new_rend.renderer_type = 'ribbon';
       new_rend.renderer_name = 'ribbon1';
       new_rend.recenter_view = false;
-      new_rend.default_style_name = 'DefaultCPKColoring';
+      new_rend.default_style_name = 'DefaultRibbon,DefaultHSCPaint';
       new_rend.run();
     }
     view.invalidate();

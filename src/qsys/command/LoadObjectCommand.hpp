@@ -1,6 +1,7 @@
 #pragma once
 
 #include <qlib/LString.hpp>
+#include <qlib/LVarDict.hpp>
 #include <qsys/ObjReader.hpp>
 #include <qsys/Scene.hpp>
 #include <qsys/View.hpp>
@@ -53,6 +54,9 @@ public:
 
     /// object file format (optional)
     LString m_fileFmt;
+
+    /// Options (optional)
+    qlib::LVarDict m_options;
 
     //////////
     // properties (output)

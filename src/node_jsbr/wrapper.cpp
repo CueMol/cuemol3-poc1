@@ -3,6 +3,8 @@
 #include <qlib/LScrCallBack.hpp>
 #include <qlib/LScriptable.hpp>
 #include <qlib/LVarArgs.hpp>
+#include <qlib/LVarArray.hpp>
+#include <qlib/LVarDict.hpp>
 #include <qlib/LVariant.hpp>
 #include <qlib/qlib.hpp>
 
@@ -365,32 +367,57 @@ bool Wrapper::napiValueToLVar(Napi::Env env, Napi::Value value, qlib::LVariant &
             rvar.shareObjectPtr(pcb_ptr);
             return true;
         }
-        // array
+        // array (TODO: typed array, etc...)
         if (value.IsArray()) {
-            // TODO: impl
-            printf("Napi::Value array not supported\n");
-            return false;
+            auto array = value.As<Napi::Array>();
+            int nsize = array.Length();
+            qlib::LVarArray *pArray = MB_NEW qlib::LVarArray(nsize);
+            rvar.setArrayPtr(pArray);
+            for (int i=0; i<nsize; ++i) {
+                napiValueToLVar(env, array.Get(i), pArray->at(i));
+            }
+            printf("*** array length: %d\n", nsize);
+            return true;
         }
-        // object
+        // object (wrapped or dict)
         if (value.IsObject()) {
             // try to get wrapped scrobj
-            auto obj = value.ToObject();
-            // TODO: use napi_unwrap directly to aviod throw exception
-            Wrapper *pWrapper = Wrapper::Unwrap(obj);
-            if (!pWrapper) {
-                printf("Napi::Object not wrapper object\n");
-                return false;
-            }
+            Napi::Object obj = value.ToObject();
 
-            auto pScrObj = pWrapper->getWrapped();
-            if (!pScrObj) {
-                printf("Null wrapped object\n");
-                return false;
-            }
-            if (pScrObj) {
-                // pobj is owned by the interpreter (?)
-                // (variant share the ptr and won't have the ownership!!)
-                rvar.shareObjectPtr(pScrObj);
+            // TODO: other key to check wrapped object ??
+            bool iswrapped = obj.Has("getAbiClassName");
+            if (iswrapped) {
+                // This should not be failed
+                Wrapper *pWrapper = Wrapper::Unwrap(obj);
+                if (!pWrapper) {
+                    printf("Napi::Object not wrapper object\n");
+                    return false;
+                }
+                auto pScrObj = pWrapper->getWrapped();
+                if (!pScrObj) {
+                    printf("Null wrapped object\n");
+                    return false;
+                }
+                if (pScrObj) {
+                    // pobj is owned by the interpreter (?)
+                    // (variant share the ptr and won't have the ownership!!)
+                    rvar.shareObjectPtr(pScrObj);
+                    return true;
+                }
+            } else {
+                // dict
+                qlib::LVarDict *pDict = MB_NEW qlib::LVarDict();
+                rvar.setDictPtr(pDict);
+                auto prop_names = obj.GetPropertyNames();
+                for (int i=0; i<prop_names.Length(); ++i) {
+                    auto key = prop_names.Get(i);
+                    auto key_str = qlib::LString(key.ToString().Utf8Value().c_str());
+                    // printf("dict key %d: %s\n", i, key_str.c_str());
+                    auto value = obj.Get(key);
+                    qlib::LVariant lvar;
+                    napiValueToLVar(env, value, lvar);
+                    pDict->set(key_str, lvar);
+                }
                 return true;
             }
         }

@@ -36,6 +36,9 @@ runtime_class LoadObjectCommand extends Command
     property string file_format => m_fileFmt;
     default file_format = "";
 
+    /// Options (optional)
+    property dict options => m_options;
+
     //////////
     // properties (output)
 

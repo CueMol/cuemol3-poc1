@@ -62,6 +62,14 @@ void LoadObjectCommand::run()
 
     auto strMgr = qsys::StreamManager::getInstance();
     qsys::ObjReaderPtr reader = strMgr->createHandler(m_fileFmt, nCatID);
+
+    // set reader options
+    for (const auto &elem : m_options) {
+        LOG_DPRINTLN("reader options key: %s", elem.first.c_str());
+        const auto &val = elem.second;
+        reader->setProperty(elem.first, elem.second);
+    }
+
     reader->setPath(m_filePath);
 
     // check compression
@@ -111,5 +119,6 @@ const char *LoadObjectCommand::getName() const
 {
     return "load_object";
 }
+
 
 }  // namespace qsys
