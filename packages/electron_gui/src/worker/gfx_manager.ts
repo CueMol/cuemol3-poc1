@@ -48,7 +48,7 @@ export class GfxManager {
     gl.enable(gl.BLEND);
 
     this.createUBO();
-    this.setUpLight();
+    // this.setUpLight();
 
     const view = this._sceMgr.getView(view_id);
     
@@ -252,12 +252,13 @@ export class GfxManager {
   }
 
   // lighting uniforms
-  setUpLight() : void {
+  setUpLight(array_buf: any) : void {
+    // console.log("light array buf: "+new Float32Array(array_buf));
     const gl = this._context;
-    let buf = new Float32Array([0.2, 0.8, 0.4, 32.0,
-                                1.0, 1.0, 1.5, 0.0]);
+    // let buf = new Float32Array([0.2, 0.8, 0.4, 32.0,
+    //                             1.0, 1.0, 1.5, 0.0]);
     gl.bindBuffer(gl.UNIFORM_BUFFER, this._light_ubo);
-    gl.bufferSubData(gl.UNIFORM_BUFFER, 0, buf);
+    gl.bufferSubData(gl.UNIFORM_BUFFER, 0, array_buf);
     gl.bindBuffer(gl.UNIFORM_BUFFER, null);
   }
 

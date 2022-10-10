@@ -66,6 +66,7 @@ public:
     //
 
     virtual void setLighting(bool f);
+    virtual void setMaterial(const LString &name);
 
     ///////////////////////////////
     // Shader support

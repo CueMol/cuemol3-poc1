@@ -4,6 +4,7 @@
 
 #include <gfx/DrawAttrArray.hpp>
 #include <qsys/SceneManager.hpp>
+#include <qsys/style/StyleMgr.hpp>
 
 // #include "ElecDisplayList.hpp"
 #include "ElecProgramObject.hpp"
@@ -98,5 +99,49 @@ void ElecDisplayContext::setLighting(bool f)
     m_bEnableLighting = f;
 }
 
+void ElecDisplayContext::setMaterial(const LString &name)
+{
+    super_t::setMaterial(name);
+
+    // TODO: check changed (and only update if changed)
+    qsys::StyleMgr *pSM = qsys::StyleMgr::getInstance();
+    float dvalue;
+
+    // Default Material: (plastic-like shading)
+    //  Ambient = 0.2 (*(1,1,1))
+    //  Diffuse = 0.8
+    //  Specular = 0.4
+    float amb = 0.2, diff = 0.8, spec = 0.4;
+    float shin = 32.0;
+
+    dvalue = pSM->getMaterial(name, gfx::Material::MAT_AMBIENT);
+    if (dvalue >= -0.1) {
+        amb = dvalue;
+    }
+
+    dvalue = pSM->getMaterial(name, gfx::Material::MAT_DIFFUSE);
+    if (dvalue >= -0.1) {
+        diff = dvalue;
+    }
+
+    dvalue = pSM->getMaterial(name, gfx::Material::MAT_SPECULAR);
+    if (dvalue >= -0.1) {
+        spec = dvalue;
+    }
+
+    dvalue = pSM->getMaterial(name, gfx::Material::MAT_SHININESS);
+    if (dvalue >= -0.1) {
+        shin = dvalue;
+    }
+
+    // GLfloat tmpv[4] = {0.0, 0.0, 0.0, 1.0};
+    // tmpv[0] = tmpv[1] = tmpv[2] = float(amb);
+    // glLightfv(GL_LIGHT0, GL_AMBIENT, tmpv);
+    // tmpv[0] = tmpv[1] = tmpv[2] = float(diff);
+    // glLightfv(GL_LIGHT0, GL_DIFFUSE, tmpv);
+    // tmpv[0] = tmpv[1] = tmpv[2] = float(spec);
+    // glLightfv(GL_LIGHT0, GL_SPECULAR, tmpv);
+    // glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, float(shin));
+}
 
 }  // namespace node_jsbr
