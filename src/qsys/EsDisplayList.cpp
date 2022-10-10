@@ -82,6 +82,7 @@ void EsDisplayList::vertex(const Vector4D &aV)
 
             //////////////////////////////////////////////////////
         case DRAWMODE_TRIGSTRIP:
+            // printf("vertex color %X\n", color_value);
             m_mesh.addVertex(v, m_norm, color_value);
             break;
 

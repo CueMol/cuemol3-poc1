@@ -270,14 +270,31 @@ Napi::Value Wrapper::lvarToNapiValue(Napi::Env env, qlib::LVariant &variant)
             return pObj;
         }
         case qlib::LVariant::LT_ARRAY: {
-            // TODO: impl
-            break;
+            auto *pLArray = variant.getArrayPtr();
+            int nsize = pLArray->size();
+            auto napi_array = Napi::Array::New(env);
+            // transfer elements
+            for (int i=0; i<nsize; ++i) {
+                qlib::LVariant &value = pLArray->at(i);
+                auto napi_val = lvarToNapiValue(env, value);
+                napi_array.Set(i, napi_val);
+            }
+            return napi_array;
         }
         case qlib::LVariant::LT_DICT: {
-            // TODO: impl
-            break;
+            auto napi_dict =Napi::Object::New(env);
+            // transfer elements
+            auto *pLDict = variant.getDictPtr();
+            for (auto &&elem : *pLDict) {
+                const qlib::LString &key = elem.first;
+                qlib::LVariant &value = elem.second;
+                auto napi_val = lvarToNapiValue(env, value);
+                napi_dict.Set(key.c_str(), napi_val);
+            }
+
+            return napi_dict;
         }
-        default:
+    default:
             break;
     }
 

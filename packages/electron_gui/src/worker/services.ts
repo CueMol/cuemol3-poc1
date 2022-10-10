@@ -180,6 +180,43 @@ export class WorkerService {
     );
   }
 
+  makeSel(selstr: string, uid: number=0) : any {
+    let sel = this.cuemol.createObj("SelCommand");
+    if (selstr) {
+      if (uid) {
+        if (!sel.compile(selstr, uid))
+          return null;
+      }
+      else {
+        if (!sel.compile(selstr, 0))
+          return null;
+      }
+    }
+    return sel;
+  }
+
+  makeColor(str: string, uid: number=0) : any {
+    let stylem = this.cuemol.getService("StyleManager");
+    let color = null;
+    if (uid) {
+      color = stylem.compileColor(str, uid);
+    }
+    else {
+      color = stylem.compileColor(str, 0);
+    }
+    return color;
+  };
+
+  createDefPaintColoring() : any {
+    // dd("===== createDefPaintColoring called!!");
+    let rval = this.cuemol.createObj("PaintColoring");
+    rval.append(this.makeSel("sheet"), this.makeColor("SteelBlue"));
+    rval.append(this.makeSel("helix"), this.makeColor("khaki"));
+    rval.append(this.makeSel("nucleic"), this.makeColor("yellow"));
+    rval.append(this.makeSel("*"), this.makeColor("FloralWhite"));
+    return rval;
+  };
+
   loadTestPDB(scene_id: number, view_id: number) : boolean {
     let scene = this.sceMgr.getScene(scene_id);
     let view = this.sceMgr.getView(view_id);
@@ -195,6 +232,9 @@ export class WorkerService {
     load_object.run();
     let mol = load_object.result_object;
     
+    // set default painting for mol
+    mol.coloring = this.createDefPaintColoring();
+
     {
       let new_rend = this.cmdMgr.getCmd('new_renderer');
       new_rend.target_object = mol;

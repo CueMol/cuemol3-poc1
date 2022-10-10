@@ -46,7 +46,6 @@ void DirectionalLight(in vec3 normal)
     float pf;      // power factor
 
     vec3 lightSource_position = u_light.position.xyz;
-    // vec3 lightSource_position = vec3(1.0f, 1.0f, 1.5f);
     vec3 lightSource_halfVector = normalize(lightSource_position + vec3(0, 0, 1));
     nDotVP = max(0.0, dot(normal, normalize(vec3(lightSource_position))));
     nDotHV = max(0.0, dot(normal, vec3(lightSource_halfVector)));
@@ -83,10 +82,6 @@ void main()
 {
     vec4 ecPos = model * vec4(vertexPosition.xyz, 1.0);
     gl_Position = projection * ecPos;
-    // gl_Position = vec4(vertexPosition.xyz, 1.0);
-
-    // vec3 vnormal = fnormal(model);
-    // vColor = flight(vnormal, ecPos, color);
 
     if (enable_lighting) {
         vec3 vnormal = fnormal(model);
