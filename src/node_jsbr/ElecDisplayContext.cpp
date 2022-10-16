@@ -4,8 +4,8 @@
 
 #include <gfx/DrawAttrArray.hpp>
 #include <qsys/SceneManager.hpp>
+#include <qsys/style/StyleMgr.hpp>
 
-#include "ElecDisplayList.hpp"
 #include "ElecProgramObject.hpp"
 #include "ElecVBOImpl.hpp"
 #include "ElecView.hpp"
@@ -38,6 +38,7 @@ void ElecDisplayContext::drawElem(const gfx::AbstDrawElem &data)
     if (!pImpl) {
         auto name = LString::format("%s_%p", getSectionName().c_str(), pda);
         pImpl = new ElecVBOImpl(m_pView, name, *pda);
+        pImpl->setLighting(m_bEnableLighting);
         data.setVBO(pImpl);
     }
     pImpl->drawBuffer(m_pView, data.isUpdated());
@@ -92,5 +93,51 @@ void ElecDisplayContext::startTriangleFan() {}
 void ElecDisplayContext::startQuadStrip() {}
 void ElecDisplayContext::startQuads() {}
 void ElecDisplayContext::end() {}
+
+void ElecDisplayContext::setLighting(bool f)
+{
+    m_bEnableLighting = f;
+}
+
+void ElecDisplayContext::setMaterial(const LString &name)
+{
+    super_t::setMaterial(name);
+
+    // TODO: check changed (and only update if changed)
+    qsys::StyleMgr *pSM = qsys::StyleMgr::getInstance();
+    float dvalue;
+
+    // Default Material: (plastic-like shading)
+    //  Ambient = 0.2 (*(1,1,1))
+    //  Diffuse = 0.8
+    //  Specular = 0.4
+    float amb = 0.2, diff = 0.8, spec = 0.4;
+    float shin = 32.0;
+
+    dvalue = pSM->getMaterial(name, gfx::Material::MAT_AMBIENT);
+    if (dvalue >= -0.1) {
+        amb = dvalue;
+    }
+
+    dvalue = pSM->getMaterial(name, gfx::Material::MAT_DIFFUSE);
+    if (dvalue >= -0.1) {
+        diff = dvalue;
+    }
+
+    dvalue = pSM->getMaterial(name, gfx::Material::MAT_SPECULAR);
+    if (dvalue >= -0.1) {
+        spec = dvalue;
+    }
+
+    dvalue = pSM->getMaterial(name, gfx::Material::MAT_SHININESS);
+    if (dvalue >= -0.1) {
+        shin = dvalue;
+    }
+    
+    // XXX
+    // TODO: set material settings to draw obj (and not global lighting)
+    m_pView->setLighting(amb, diff, spec, shin);
+    m_pView->updateLightingUBO();
+}
 
 }  // namespace node_jsbr

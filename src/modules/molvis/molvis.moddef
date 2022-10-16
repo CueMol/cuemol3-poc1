@@ -1,0 +1,46 @@
+// -*-Mode: C++;-*-
+//
+// $Id: molvis.moddef,v 1.12 2010/12/03 16:40:41 rishitani Exp $
+
+#include "BallStickRenderer.qif"
+#include "AnIsoURenderer.qif"
+#include "CPKRenderer.qif"
+#include "CPK2Renderer.qif"
+#include "SplineRenderer.qif"
+#include "TubeRenderer.qif"
+#include "TubeSection.qif"
+#include "PaintColoring.qif"
+#include "RibbonRenderer.qif"
+#include "JctTable.qif"
+#include "NARenderer.qif"
+#include "AtomIntrRenderer.qif"
+#include "Ribbon2Renderer.qif"
+#include "RainbowColoring.qif"
+// #include "ScriptColoring.qif"
+#include "DistPickDrawObj.qif"
+#include "DisoRenderer.qif"
+
+module molvis
+{
+  init molvis::init();
+  fini molvis::fini();
+
+  BallStickRenderer;
+  AnIsoURenderer;
+  CPKRenderer;
+  CPK2Renderer;
+  SplineRenderer;
+  TubeRenderer;
+  TubeSection;
+  PaintColoring;
+  RibbonRenderer;
+  JctTable;
+  NARenderer;
+  AtomIntrRenderer;
+  DisoRenderer;
+  Ribbon2Renderer;
+  RainbowColoring;
+  // ScriptColoring;
+  DistPickDrawObj;
+};
+

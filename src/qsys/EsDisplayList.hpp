@@ -36,15 +36,21 @@ private:
     struct TrigVertAttr
     {
         float x, y, z, w;
-        // float nx, ny, nz, nw;
         float r, g, b, a;
+        float nx, ny, nz, nw;
     };
+
+    //////////
+    // trigs (vert only)
 
     using TrigVertArray = gfx::DrawAttrArray<TrigVertAttr>;
     TrigVertArray *m_pTrigArray;
 
     using TrigVertBuf = std::deque<TrigVertAttr>;
     TrigVertBuf m_trigBuf;
+
+    //////////
+    // trig mesh (vert + indices)
 
     gfx::GrowMesh m_mesh;
 
@@ -105,10 +111,16 @@ private:
 
     void addTrigVert(const Vector4D &v, const Vector4D &n, qlib::quint32 c);
 
+    void createLineArray();
+    void createTrigArray();
+    void createTrigMesh();
+
 public:
+    // Attribute location ID
+    // These values should coincide with the location layout qualifiers in the shader
     static const int DSLOC_VERT_POS = 0;
     static const int DSLOC_VERT_COLOR = 1;
-    static const int DSLOC_VERT_NORMAL = 1;
+    static const int DSLOC_VERT_NORMAL = 2;
 
     EsDisplayList();
     virtual ~EsDisplayList();

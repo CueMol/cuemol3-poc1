@@ -82,6 +82,7 @@ void EsDisplayList::vertex(const Vector4D &aV)
 
             //////////////////////////////////////////////////////
         case DRAWMODE_TRIGSTRIP:
+            // printf("vertex color %X\n", color_value);
             m_mesh.addVertex(v, m_norm, color_value);
             break;
 
@@ -158,7 +159,7 @@ void EsDisplayList::loadMatrix(const qlib::Matrix4D &mat)
 
 void EsDisplayList::setPolygonMode(int id)
 {
-    LOG_DPRINTLN("setPolygonMode is not supported (ignored.)");
+    MB_DPRINTLN("setPolygonMode is not supported (ignored.)");
 }
 
 void EsDisplayList::startPoints()
@@ -168,7 +169,7 @@ void EsDisplayList::startPoints()
 
 void EsDisplayList::startPolygon()
 {
-    LOG_DPRINTLN("polygon is not supported (vertex command ignored.)");
+    MB_DPRINTLN("polygon is not supported (vertex command ignored.)");
 }
 
 void EsDisplayList::startLines()
@@ -271,10 +272,20 @@ void EsDisplayList::drawLine(const Vector4D &v1, qlib::quint32 c1, const Vector4
 void EsDisplayList::addTrigVert(const Vector4D &v1, const Vector4D &n1,
                                 qlib::quint32 c1)
 {
-    m_trigBuf.push_back(TrigVertAttr{float(v1.x()), float(v1.y()), float(v1.z()),
-                                     float(v1.w()), float(gfx::getFR(c1)),
-                                     float(gfx::getFG(c1)), float(gfx::getFB(c1)),
-                                     float(gfx::getFA(c1))});
+    m_trigBuf.push_back(TrigVertAttr{
+        float(v1.x()),
+        float(v1.y()),
+        float(v1.z()),
+        float(v1.w()),
+        float(gfx::getFR(c1)),
+        float(gfx::getFG(c1)),
+        float(gfx::getFB(c1)),
+        float(gfx::getFA(c1)),
+        float(n1.x()),
+        float(n1.y()),
+        float(n1.z()),
+        float(n1.w()),
+    });
 }
 
 bool EsDisplayList::recordStart()
@@ -301,14 +312,8 @@ bool EsDisplayList::recordStart()
     return true;
 }
 
-void EsDisplayList::recordEnd()
+void EsDisplayList::createLineArray()
 {
-    printf("EsDisplayList::recordEnd called %p\n", m_pLineArray);
-    MB_ASSERT(m_pLineArray == nullptr);
-
-    // Mark as valid
-    m_fValid = true;
-
     // Create Line attr array
     const size_t nelems_line = m_lineBuf.size();
     printf("EsDisplayList::recordEnd nelems_line %zu\n", nelems_line);
@@ -332,20 +337,24 @@ void EsDisplayList::recordEnd()
         m_pLineArray->setUpdated(true);
         m_lineBuf.clear();
     }
+}
 
-    // Create Trig attr array
+void EsDisplayList::createTrigArray()
+{
     MB_ASSERT(m_pTrigArray == nullptr);
     const size_t nelems_trig = m_trigBuf.size();
     printf("EsDisplayList::recordEnd nelems_trig %zu\n", nelems_trig);
     if (nelems_trig > 0) {
         m_pTrigArray = new TrigVertArray();
         m_pTrigArray->setDrawMode(gfx::AbstDrawElem::DRAW_TRIANGLES);
-        m_pTrigArray->setAttrSize(2);
+        m_pTrigArray->setAttrSize(3);
         m_pTrigArray->setAttrInfo(0, DSLOC_VERT_POS, 4, qlib::type_consts::QTC_FLOAT32,
                                   offsetof(TrigVertAttr, x));
         m_pTrigArray->setAttrInfo(1, DSLOC_VERT_COLOR, 4,
                                   qlib::type_consts::QTC_FLOAT32,
                                   offsetof(TrigVertAttr, r));
+        m_pTrigArray->setAttrInfo(2, DSLOC_VERT_NORMAL, 4, qlib::type_consts::QTC_FLOAT32,
+                                  offsetof(TrigVertAttr, nx));
         m_pTrigArray->alloc(nelems_trig);
 
         size_t i = 0;
@@ -357,7 +366,10 @@ void EsDisplayList::recordEnd()
         m_pTrigArray->setUpdated(true);
         m_trigBuf.clear();
     }
+}
 
+void EsDisplayList::createTrigMesh()
+{
     // Create Trig attr indexed array
     MB_ASSERT(m_pTrigMesh == nullptr);
     const size_t nMeshVerts = m_mesh.getVertexSize();
@@ -365,22 +377,28 @@ void EsDisplayList::recordEnd()
     if (nMeshFaces > 0) {
         m_pTrigMesh = new TrigMesh();
         m_pTrigMesh->setDrawMode(gfx::AbstDrawElem::DRAW_TRIANGLES);
-        m_pTrigMesh->setAttrSize(2);
+        m_pTrigMesh->setAttrSize(3);
         m_pTrigMesh->setAttrInfo(0, DSLOC_VERT_POS, 4, qlib::type_consts::QTC_FLOAT32,
                                  offsetof(TrigVertAttr, x));
         m_pTrigMesh->setAttrInfo(1, DSLOC_VERT_COLOR, 4, qlib::type_consts::QTC_FLOAT32,
                                  offsetof(TrigVertAttr, r));
+        m_pTrigMesh->setAttrInfo(2, DSLOC_VERT_NORMAL, 4, qlib::type_consts::QTC_FLOAT32,
+                                 offsetof(TrigVertAttr, nx));
         m_pTrigMesh->alloc(nMeshVerts);
         m_pTrigMesh->allocInd(nMeshFaces * 3);
         size_t i = 0;
         for (const auto *pelem : m_mesh.getVertexData()) {
             const auto &c1 = pelem->c;
             const auto &v1 = pelem->v;
-            m_pTrigMesh->at(i) =
-                TrigVertAttr{float(v1.x()),         float(v1.y()),
-                             float(v1.z()),         1.0f,
-                             float(gfx::getFR(c1)), float(gfx::getFG(c1)),
-                             float(gfx::getFB(c1)), float(gfx::getFA(c1))};
+            const auto &n1 = pelem->n;
+            m_pTrigMesh->at(i) = TrigVertAttr{
+                float(v1.x()),         float(v1.y()),
+                float(v1.z()),         1.0f,
+                float(gfx::getFR(c1)), float(gfx::getFG(c1)),
+                float(gfx::getFB(c1)), float(gfx::getFA(c1)),
+                float(n1.x()),         float(n1.y()),
+                float(n1.z()),         1.0f,
+            };
             i++;
         }
         i = 0;
@@ -393,6 +411,24 @@ void EsDisplayList::recordEnd()
         m_pTrigMesh->setUpdated(true);
         m_mesh.clear();
     }
+}
+
+void EsDisplayList::recordEnd()
+{
+    printf("EsDisplayList::recordEnd called %p\n", m_pLineArray);
+    MB_ASSERT(m_pLineArray == nullptr);
+
+    // Mark as valid
+    m_fValid = true;
+
+    // Line
+    createLineArray();
+
+    // Create Trig attr array
+    createTrigArray();
+
+    // Create Trig attr indexed array
+    createTrigMesh();
 }
 
 gfx::DisplayContext *EsDisplayList::createDisplayList()

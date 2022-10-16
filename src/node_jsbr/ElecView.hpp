@@ -25,7 +25,12 @@ private:
     /// JS-side WebGL display manager
     Napi::ObjectReference m_peerObjRef;
 
+    /// Lighting array
+    std::array<float, 8> m_lightArray;
+
+    /// UBO buffers
     Napi::ObjectReference m_modelArrayBuf, m_projArrayBuf;
+    Napi::ObjectReference m_lightArrayBuf;
 
 public:
     ElecView();
@@ -59,9 +64,26 @@ public:
         return m_peerObjRef.Value();
     }
 
+    void setLighting(float amb, float diff, float spec, float shin) {
+        m_lightArray[0] = amb;
+        m_lightArray[1] = diff;
+        m_lightArray[2] = spec;
+        m_lightArray[3] = shin;
+    }
+    void setLightDir(const Vector4D &dir) {
+        m_lightArray[4] = float(dir.x());
+        m_lightArray[5] = float(dir.y());
+        m_lightArray[6] = float(dir.z());
+        m_lightArray[7] = 0.0f;
+    }
+    void updateLightingUBO();
+
 private:
     void clear(const gfx::ColorPtr &col);
 
+    void createModelMatArrayBuf(Napi::Env env);
+    void createProjMatArrayBuf(Napi::Env env);
+    void createLightArrayBuf(Napi::Env env);
 };
 
 class ElecViewFactory : public qsys::ViewFactory

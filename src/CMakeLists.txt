@@ -114,3 +114,4 @@ endif()
 
 # sub components/modules
 add_subdirectory(modules/molstr)
+add_subdirectory(modules/molvis)

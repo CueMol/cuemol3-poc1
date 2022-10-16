@@ -20,6 +20,9 @@ private:
     Napi::ObjectReference m_indexBufRef;
     size_t m_nIndexElems;
 
+    // material/lighting
+    bool m_bEnableLighting;
+
 public:
     ElecVBOImpl(ElecView *pView, const qlib::LString &name,
                 const gfx::AbstDrawAttrs &data)
@@ -27,7 +30,8 @@ public:
           m_bufName(name),
           m_nElems(data.getSize()),
           m_nDrawMode(data.getDrawMode()),
-          m_nIndexElems(0)
+          m_nIndexElems(0),
+          m_bEnableLighting(false)
     {
         qlib::LString json_str;
         json_str += "[";
@@ -86,6 +90,8 @@ public:
         }
     }
 
+    void setLighting(bool b) { m_bEnableLighting = b; }
+
     void drawBuffer(ElecView *pView, bool isUpdated)
     {
         auto peer = pView->getPeerObj();
@@ -98,12 +104,14 @@ public:
                 peer,
                 {Napi::String::New(env, m_bufName), Napi::Number::New(env, m_nDrawMode),
                  Napi::Number::New(env, m_nIndexElems), m_arrayBufRef.Value(),
-                 m_indexBufRef.Value(), Napi::Boolean::New(env, isUpdated)});
+                 m_indexBufRef.Value(), Napi::Boolean::New(env, isUpdated),
+                 Napi::Boolean::New(env, m_bEnableLighting)});
         } else {
             method.Call(peer, {Napi::String::New(env, m_bufName),
                                Napi::Number::New(env, m_nDrawMode),
                                Napi::Number::New(env, m_nElems), m_arrayBufRef.Value(),
-                               env.Null(), Napi::Boolean::New(env, isUpdated)});
+                               env.Null(), Napi::Boolean::New(env, isUpdated),
+                               Napi::Boolean::New(env, m_bEnableLighting)});
         }
     }
 

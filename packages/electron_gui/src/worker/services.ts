@@ -180,6 +180,43 @@ export class WorkerService {
     );
   }
 
+  makeSel(selstr: string, uid: number=0) : any {
+    let sel = this.cuemol.createObj("SelCommand");
+    if (selstr) {
+      if (uid) {
+        if (!sel.compile(selstr, uid))
+          return null;
+      }
+      else {
+        if (!sel.compile(selstr, 0))
+          return null;
+      }
+    }
+    return sel;
+  }
+
+  makeColor(str: string, uid: number=0) : any {
+    let stylem = this.cuemol.getService("StyleManager");
+    let color = null;
+    if (uid) {
+      color = stylem.compileColor(str, uid);
+    }
+    else {
+      color = stylem.compileColor(str, 0);
+    }
+    return color;
+  };
+
+  createDefPaintColoring() : any {
+    // dd("===== createDefPaintColoring called!!");
+    let rval = this.cuemol.createObj("PaintColoring");
+    rval.append(this.makeSel("sheet"), this.makeColor("SteelBlue"));
+    rval.append(this.makeSel("helix"), this.makeColor("khaki"));
+    rval.append(this.makeSel("nucleic"), this.makeColor("yellow"));
+    rval.append(this.makeSel("*"), this.makeColor("FloralWhite"));
+    return rval;
+  };
+
   loadTestPDB(scene_id: number, view_id: number) : boolean {
     let scene = this.sceMgr.getScene(scene_id);
     let view = this.sceMgr.getView(view_id);
@@ -189,18 +226,37 @@ export class WorkerService {
     let load_object = this.cmdMgr.getCmd('load_object');
     load_object.target_scene = scene;
     load_object.file_path = path;
+    load_object.options = {"build2ndry": true, "hoge": "moge"};
+    // load_object.options = ["hoge", 123];
     // load_object.object_name ="1CRN.pdb";
     load_object.run();
     let mol = load_object.result_object;
     
-    let new_rend = this.cmdMgr.getCmd('new_renderer');
-    new_rend.target_object = mol;
-    new_rend.renderer_type = 'simple';
-    new_rend.renderer_name = 'simple1';
-    new_rend.recenter_view = true;
-    new_rend.default_style_name = 'DefaultCPKColoring';
-    new_rend.run();
-    
+    // set default painting for mol
+    mol.coloring = this.createDefPaintColoring();
+
+    {
+      let new_rend = this.cmdMgr.getCmd('new_renderer');
+      new_rend.target_object = mol;
+      new_rend.renderer_type = 'simple';
+      new_rend.renderer_name = 'simple1';
+      new_rend.recenter_view = true;
+      new_rend.default_style_name = 'DefaultCPKColoring';
+      new_rend.run();
+    }
+
+    {
+      let new_rend = this.cmdMgr.getCmd('new_renderer');
+      new_rend.target_object = mol;
+      // new_rend.renderer_type = 'ribbon';
+      // new_rend.renderer_name = 'ribbon1';
+      // new_rend.default_style_name = 'DefaultRibbon,DefaultHSCPaint';
+      new_rend.renderer_type = 'cartoon';
+      new_rend.renderer_name = 'cartoon1';
+      new_rend.default_style_name = 'DefaultCartoon,DefaultHSCPaint';
+      new_rend.recenter_view = false;
+      new_rend.run();
+    }
     view.invalidate();
     //view.checkAndUpdate();
 

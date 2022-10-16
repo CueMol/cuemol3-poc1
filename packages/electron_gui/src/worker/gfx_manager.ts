@@ -1,3 +1,9 @@
+const FLOAT_SIZE = 4
+const MODEL_MAT_SIZE = 4 * 4 * FLOAT_SIZE;
+const PROJ_MAT_SIZE = 4 * 4 * FLOAT_SIZE;
+const NORM_MAT_SIZE = 4 * 4 * FLOAT_SIZE;
+
+const LIGHT_UBO_SIZE = 4 * FLOAT_SIZE + 4 * FLOAT_SIZE;
 
 export class GfxManager {
   // for program object
@@ -6,6 +12,9 @@ export class GfxManager {
   // common UBO info
   private _mvp_mat_loc: number = 0;
   private _mat_ubo: any = null;
+
+  private _light_loc: number = 1;
+  private _light_ubo: any = null;
   
   // for VBOs
   private _draw_data: any = {};
@@ -17,6 +26,8 @@ export class GfxManager {
   private bound_views: any = [];
 
   private _context: any;
+
+  private _enable_lighting_loc: number = 0;
 
   constructor(cuemol: any) {
     this.cuemol = cuemol;
@@ -36,6 +47,9 @@ export class GfxManager {
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     gl.enable(gl.BLEND);
 
+    this.createUBO();
+    // this.setUpLight();
+
     const view = this._sceMgr.getView(view_id);
     
     if (dpr!==null) {
@@ -45,6 +59,7 @@ export class GfxManager {
 
     this.cuemol.internal.bindPeer(view._wrapped, this);
     this.bound_views.push(view_id);
+
   }
 
   get canvas() : any {
@@ -82,6 +97,36 @@ export class GfxManager {
   }
 
   //////////
+  // UBO
+
+  // Create UBO
+  createUBO() : void {
+    const gl = this._context;
+
+    // MVP matrix UBO
+    let matrix_ubo = gl.createBuffer();
+    gl.bindBuffer(gl.UNIFORM_BUFFER, matrix_ubo);
+    gl.bufferData(gl.UNIFORM_BUFFER,
+                  MODEL_MAT_SIZE*2 + PROJ_MAT_SIZE,
+                  gl.DYNAMIC_DRAW);
+    gl.bindBufferBase(gl.UNIFORM_BUFFER, this._mvp_mat_loc, matrix_ubo);
+    gl.bindBuffer(gl.UNIFORM_BUFFER, null);
+    this._mat_ubo = matrix_ubo;
+
+    // Lighting UBO
+    let light_ubo = gl.createBuffer();
+    gl.bindBuffer(gl.UNIFORM_BUFFER, light_ubo);
+    gl.bufferData(gl.UNIFORM_BUFFER,
+                  LIGHT_UBO_SIZE,
+                  gl.DYNAMIC_DRAW);
+    gl.bindBufferBase(gl.UNIFORM_BUFFER, this._light_loc, light_ubo);
+    gl.bindBuffer(gl.UNIFORM_BUFFER, null);
+    this._light_ubo = light_ubo;
+
+    console.log('UBO created');
+  }
+
+  //////////
   // Program objects
 
   toShaderTypeID(name: string) : any {
@@ -115,6 +160,7 @@ export class GfxManager {
       const status = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
       if (!status) {
         const info = gl.getShaderInfoLog(shader);
+        console.log("XXX: shader compile failed");
         console.log(info);
         return false;
       }
@@ -127,15 +173,27 @@ export class GfxManager {
     const status = gl.getProgramParameter(program, gl.LINK_STATUS);
     if (!status) {
       const info = gl.getProgramInfoLog(program);
+      console.log("XXX: shader link failed");
       console.log(info);
       return false;
     }
 
     // setup common UBO entries
-    let mvp_mat_index = gl.getUniformBlockIndex(program, 'mvp_matrix');
+    const mvp_mat_index = gl.getUniformBlockIndex(program, 'mvp_matrix');
     gl.uniformBlockBinding(program, mvp_mat_index, this._mvp_mat_loc);
+    console.log("mvp_mat_index: "+mvp_mat_index);
+    console.log("this._mvp_mat_loc: "+this._mvp_mat_loc);
+
+    const light_index = gl.getUniformBlockIndex(program, 'lighting');
+    gl.uniformBlockBinding(program, light_index, this._light_loc);
+    console.log("light_index: "+light_index);
+    console.log("this._light_loc: "+this._light_loc);
+
+    this._enable_lighting_loc = gl.getUniformLocation(program,
+                                                      "enable_lighting");
 
     this._prog_data[name] = program;
+
     return true;
   }
 
@@ -154,6 +212,8 @@ export class GfxManager {
   enableShader(shader_name: string) : void {
     const gl = this._context;
     gl.useProgram(this._prog_data[shader_name]);
+    this._enable_lighting_loc = gl.getUniformLocation(this._prog_data[shader_name],
+                                                      "enable_lighting");
   }
 
   /// API
@@ -172,23 +232,8 @@ export class GfxManager {
   //////////
   // Projection uniforms
 
-  checkMvpMatUBO() : void {
-    if (this._mat_ubo === null) {
-      // Create UBO
-      const gl = this._context;
-      let matrix_ubo = gl.createBuffer();
-      gl.bindBuffer(gl.UNIFORM_BUFFER, matrix_ubo);
-      gl.bufferData(gl.UNIFORM_BUFFER, 4 * 4 * 4 * 2, gl.DYNAMIC_DRAW);
-      gl.bindBufferBase(gl.UNIFORM_BUFFER, this._mvp_mat_loc, matrix_ubo);
-      gl.bindBuffer(gl.UNIFORM_BUFFER, null);
-      this._mat_ubo = matrix_ubo;
-      console.log('mvp UBO created');
-    }
-  }
-
   /// API
   setUpModelMat(array_buf: any) : void {
-    this.checkMvpMatUBO();
     // transfer UBO
     const gl = this._context;
     gl.bindBuffer(gl.UNIFORM_BUFFER, this._mat_ubo);
@@ -198,12 +243,22 @@ export class GfxManager {
 
   /// API
   setUpProjMat(cx: number, cy: number, array_buf: any) : void {
-    this.checkMvpMatUBO();
     // transfer UBO
     const gl = this._context;
     gl.viewport(0, 0, cx, cy);
     gl.bindBuffer(gl.UNIFORM_BUFFER, this._mat_ubo);
-    gl.bufferSubData(gl.UNIFORM_BUFFER, 4 * 4 * 4, array_buf);
+    gl.bufferSubData(gl.UNIFORM_BUFFER, MODEL_MAT_SIZE + 12*FLOAT_SIZE, array_buf);
+    gl.bindBuffer(gl.UNIFORM_BUFFER, null);
+  }
+
+  // lighting uniforms
+  setUpLight(array_buf: any) : void {
+    // console.log("light array buf: "+new Float32Array(array_buf));
+    const gl = this._context;
+    // let buf = new Float32Array([0.2, 0.8, 0.4, 32.0,
+    //                             1.0, 1.0, 1.5, 0.0]);
+    gl.bindBuffer(gl.UNIFORM_BUFFER, this._light_ubo);
+    gl.bufferSubData(gl.UNIFORM_BUFFER, 0, array_buf);
     gl.bindBuffer(gl.UNIFORM_BUFFER, null);
   }
 
@@ -269,7 +324,8 @@ export class GfxManager {
 
   /// API
   drawBuffer(id: number, nmode: number, nelems: number,
-             array_buf: any, index_buf: any, isUpdated: boolean) : void {
+             array_buf: any, index_buf: any, isUpdated: boolean,
+             enable_lighting: boolean) : void {
     const gl = this._context;
     const obj = this._draw_data[id];
     if (isUpdated) {
@@ -294,7 +350,7 @@ export class GfxManager {
     // else if (nmode == 7) {
     //     nglmode
     // }
-
+    gl.uniform1i(this._enable_lighting_loc, enable_lighting);
     gl.bindVertexArray(obj[0]);
     if (index_buf === null) {
       gl.drawArrays(nglmode, 0, nelems);
