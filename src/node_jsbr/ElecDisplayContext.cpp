@@ -6,7 +6,6 @@
 #include <qsys/SceneManager.hpp>
 #include <qsys/style/StyleMgr.hpp>
 
-// #include "ElecDisplayList.hpp"
 #include "ElecProgramObject.hpp"
 #include "ElecVBOImpl.hpp"
 #include "ElecView.hpp"
@@ -39,9 +38,10 @@ void ElecDisplayContext::drawElem(const gfx::AbstDrawElem &data)
     if (!pImpl) {
         auto name = LString::format("%s_%p", getSectionName().c_str(), pda);
         pImpl = new ElecVBOImpl(m_pView, name, *pda);
+        pImpl->setLighting(m_bEnableLighting);
         data.setVBO(pImpl);
     }
-    pImpl->drawBuffer(m_pView, data.isUpdated(), m_bEnableLighting);
+    pImpl->drawBuffer(m_pView, data.isUpdated());
     // printf("ElecDisplayContext::drawElem\n");
     data.setUpdated(false);
 }
@@ -133,15 +133,11 @@ void ElecDisplayContext::setMaterial(const LString &name)
     if (dvalue >= -0.1) {
         shin = dvalue;
     }
-
-    // GLfloat tmpv[4] = {0.0, 0.0, 0.0, 1.0};
-    // tmpv[0] = tmpv[1] = tmpv[2] = float(amb);
-    // glLightfv(GL_LIGHT0, GL_AMBIENT, tmpv);
-    // tmpv[0] = tmpv[1] = tmpv[2] = float(diff);
-    // glLightfv(GL_LIGHT0, GL_DIFFUSE, tmpv);
-    // tmpv[0] = tmpv[1] = tmpv[2] = float(spec);
-    // glLightfv(GL_LIGHT0, GL_SPECULAR, tmpv);
-    // glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, float(shin));
+    
+    // XXX
+    // TODO: set material settings to draw obj (and not global lighting)
+    m_pView->setLighting(amb, diff, spec, shin);
+    m_pView->updateLightingUBO();
 }
 
 }  // namespace node_jsbr
