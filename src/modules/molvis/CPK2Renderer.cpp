@@ -10,9 +10,9 @@
 #include <gfx/DrawAttrArray.hpp>
 #include <gfx/SphereSet.hpp>
 #include <modules/molstr/AtomIterator.hpp>
+#include <qsys/EsDisplayList.hpp>
 #include <qsys/Scene.hpp>
 #include <qsys/View.hpp>
-#include <qsys/EsDisplayList.hpp>
 
 #include "molvis.hpp"
 
@@ -27,42 +27,84 @@ public:
     using super_t = qsys::TrigMesh;
     using index_t = qlib::quint32;
 
-    bool color(int ind, qlib::quint32 cc) {
+    bool color(int ind, qlib::quint32 cc)
+    {
+        if (ind < 0 || getSize() <= ind) return false;
+        super_t::at(ind).r = gfx::getRCode(cc);
+        super_t::at(ind).g = gfx::getGCode(cc);
+        super_t::at(ind).b = gfx::getBCode(cc);
+        super_t::at(ind).a = gfx::getACode(cc);
         return true;
     }
-    bool vertex(int ind, const qlib::Vector4D &v) {
+    bool vertex(int ind, const qlib::Vector4D &v)
+    {
+        if (ind < 0 || getSize() <= ind) return false;
+        super_t::at(ind).x = qfloat32(v.x());
+        super_t::at(ind).y = qfloat32(v.y());
+        super_t::at(ind).z = qfloat32(v.z());
+        super_t::at(ind).w = qfloat32(v.w());  // 1.0f;
         return true;
     }
-    bool normal(int ind, const qlib::Vector4D &v) {
+    bool normal(int ind, const qlib::Vector4D &v)
+    {
+        if (ind < 0 || getSize() <= ind) return false;
+        super_t::at(ind).nx = 0; //qfloat32(v.x());
+        super_t::at(ind).ny = 0; //qfloat32(v.y());
+        super_t::at(ind).nz = 0; //qfloat32(v.z());
+        super_t::at(ind).nw = 0; //qfloat32(v.w());  // 1.0f;
         return true;
     }
 
     /// set face index for triangles mode (shortcut method)
-    void setIndex3(int ind, index_t n1, index_t n2, index_t n3) {
+    void setIndex3(int ind, index_t n1, index_t n2, index_t n3)
+    {
+        // MB_ASSERT((ind * 3 + 2) < m_nIndSize);
+        super_t::atind(ind * 3 + 0) = n1;
+        super_t::atind(ind * 3 + 1) = n2;
+        super_t::atind(ind * 3 + 2) = n3;
     }
 
-    bool getVertex(int ind, Vector4D &v) const {
+    bool getVertex(int ind, Vector4D &v) const
+    {
+        if (ind < 0 || getSize() <= ind) return false;
+        v.x() = super_t::at(ind).x;
+        v.y() = super_t::at(ind).y;
+        v.z() = super_t::at(ind).z;
         return true;
     }
 
     void startIndexTriangles(int nverts, int nfaces)
     {
         super_t::setDrawMode(super_t::DRAW_TRIANGLES);
+
+        super_t::setAttrSize(3);
+        super_t::setAttrInfo(0, qsys::EsDisplayList::DSLOC_VERT_POS, 4,
+                             qlib::type_consts::QTC_FLOAT32,
+                             offsetof(qsys::TrigVertAttr, x));
+        super_t::setAttrInfo(1, qsys::EsDisplayList::DSLOC_VERT_COLOR, 4,
+                             qlib::type_consts::QTC_FLOAT32,
+                             offsetof(qsys::TrigVertAttr, r));
+        super_t::setAttrInfo(2, qsys::EsDisplayList::DSLOC_VERT_NORMAL, 4,
+                             qlib::type_consts::QTC_FLOAT32,
+                             offsetof(qsys::TrigVertAttr, nx));
+
         super_t::alloc(nverts);
         allocInd(nfaces * 3);
     }
 };
 
 template <typename _DrawElemType>
-class VBOSphereSetTrait {
-  private:
-    struct Sphere {
-      Vector4D posr;
-      quint32 ccode;
+class VBOSphereSetTrait
+{
+private:
+    struct Sphere
+    {
+        Vector4D posr;
+        quint32 ccode;
     };
 
     typedef std::vector<Sphere> datatype;
-    
+
     typedef gfx::SphereSetTmpl<VBOSphereSetTrait> outer_t;
 
     datatype m_data;
@@ -73,46 +115,44 @@ class VBOSphereSetTrait {
     /// tesselation detail (common to all spheres)
     int m_nDetail;
 
-  public:
-    VBOSphereSetTrait() : m_defAlpha(1.0), m_nDetail(10)
-    {
-    }
-    
-    ~VBOSphereSetTrait()
-    {
-    }
+public:
+    VBOSphereSetTrait() : m_defAlpha(1.0), m_nDetail(10) {}
 
-    void setAlpha(double d) { m_defAlpha = d; }
+    ~VBOSphereSetTrait() {}
+
+    void setAlpha(double d)
+    {
+        m_defAlpha = d;
+    }
 
     void create(int nsize, int ndetail)
     {
-      m_nDetail = ndetail;
-      m_data.resize(nsize);
+        m_nDetail = ndetail;
+        m_data.resize(nsize);
     }
 
     void sphere(int index, const Vector4D &pos, double r, const ColorPtr &col)
     {
-      m_data[index].posr = pos;
-      m_data[index].posr.w() = r;
-      if (qlib::isNear4(m_defAlpha, 1.0)) {
-        m_data[index].ccode = col->getCode();
-      }
-      else {
-        m_data[index].ccode = gfx::mixAlpha(col->getCode(), m_defAlpha);
-      }
+        m_data[index].posr = pos;
+        m_data[index].posr.w() = r;
+        if (qlib::isNear4(m_defAlpha, 1.0)) {
+            m_data[index].ccode = col->getCode();
+        } else {
+            m_data[index].ccode = gfx::mixAlpha(col->getCode(), m_defAlpha);
+        }
     }
 
     const Vector4D &getPos(int isph) const
     {
-      return m_data[isph].posr;
+        return m_data[isph].posr;
     }
     double getRadius(int isph) const
     {
-      return m_data[isph].posr.w();
+        return m_data[isph].posr.w();
     }
     int getDetail(int isph) const
     {
-      return m_nDetail;
+        return m_nDetail;
     }
 
     /////////////////////////////
@@ -121,58 +161,58 @@ class VBOSphereSetTrait {
 
     void color(quint32 isph, quint32 ivert)
     {
-      quint32 col = m_data[isph].ccode;
-      m_pVary->color(ivert, col);
+        quint32 col = m_data[isph].ccode;
+        m_pVary->color(ivert, col);
     }
 
     void normal(quint32 ind, const Vector4D &v)
     {
-      m_pVary->normal(ind, v);
+        m_pVary->normal(ind, v);
     }
 
     void vertex(quint32 ind, const Vector4D &v)
     {
-      m_pVary->vertex(ind, v);
+        m_pVary->vertex(ind, v);
     }
 
     void face(quint32 ifc, quint32 n1, quint32 n2, quint32 n3)
     {
-      m_pVary->setIndex3(ifc, n1, n2, n3);
+        m_pVary->setIndex3(ifc, n1, n2, n3);
     }
 
-    Vector4D getVertex(quint32 ind) const {
-      Vector4D rv;
-      m_pVary->getVertex(ind, rv);
-      return rv;
+    Vector4D getVertex(quint32 ind) const
+    {
+        Vector4D rv;
+        m_pVary->getVertex(ind, rv);
+        return rv;
     }
 
     /// build draw elem objects
     _DrawElemType *buildDrawElem(outer_t *pOuter)
     {
-      int nverts,  nfaces; 
-      pOuter->estimateMeshSize(m_nDetail, nverts, nfaces);
-      int nsphs = m_data.size();
-      
-      int nvtot = nverts*nsphs;
-      int nftot = nfaces*nsphs;
-      MB_DPRINTLN("Sph> nv_tot = %d, nf_fot = %d", nvtot, nftot);
-      
-      // Create DrawElemVNCI (or VNI?) object
-      m_pVary = MB_NEW _DrawElemType();
-      m_pVary->startIndexTriangles(nvtot, nftot);
-      // m_pVary->setDrawMode(gfx::AbstDrawAttrs::DRAW_TRIANGLES);
-      // m_pVary->alloc(nverts);
-      // m_pVary->allocInd(nfaces * 3);
-      
-      int ivt = 0, ifc = 0;
-      for (int i=0; i<nsphs; ++i) {
-        pOuter->buildSphere(i, ivt, ifc);
-      }
+        int nverts, nfaces;
+        pOuter->estimateMeshSize(m_nDetail, nverts, nfaces);
+        int nsphs = m_data.size();
 
-      return m_pVary;
+        int nvtot = nverts * nsphs;
+        int nftot = nfaces * nsphs;
+        MB_DPRINTLN("Sph> nv_tot = %d, nf_fot = %d", nvtot, nftot);
+
+        // Create DrawElemVNCI (or VNI?) object
+        m_pVary = MB_NEW _DrawElemType();
+        m_pVary->startIndexTriangles(nvtot, nftot);
+        // m_pVary->setDrawMode(gfx::AbstDrawAttrs::DRAW_TRIANGLES);
+        // m_pVary->alloc(nverts);
+        // m_pVary->allocInd(nfaces * 3);
+
+        int ivt = 0, ifc = 0;
+        for (int i = 0; i < nsphs; ++i) {
+            pOuter->buildSphere(i, ivt, ifc);
+        }
+
+        return m_pVary;
     }
 };
-    
 
 CPK2Renderer::CPK2Renderer()
 {
@@ -213,7 +253,8 @@ void CPK2Renderer::display(DisplayContext *pdc)
     }
 
     preRender(pdc);
-    //pdc->drawElem(*m_pDrawElem);
+    pdc->setLighting(true);
+    pdc->drawElem(*m_pDrawElem);
     postRender(pdc);
 
     // if (!m_bCheckShaderOK) {
@@ -378,7 +419,7 @@ void CPK2Renderer::renderVBOImpl()
     // initialize the coloring scheme
     getColSchm()->start(pMol, this);
     pMol->getColSchm()->start(pMol, this);
- 
+
     gfx::SphereSetTmpl<VBOSphereSetTrait<MyMesh>> sphs2;
 
     // gfx::SphereSet sphs;
@@ -411,7 +452,7 @@ void CPK2Renderer::renderVBOImpl()
 
     // m_pDrawElem = sphs.buildDrawElem();
     m_pDrawElem = sphs2.getdata().buildDrawElem(&sphs2);
-
+    m_pDrawElem->setUpdated(true);
     // finalize the coloring scheme
     getColSchm()->end();
     pMol->getColSchm()->end();
@@ -467,4 +508,3 @@ void CPK2Renderer::renderVBOImpl()
 //     getColSchm()->end();
 //     pMol->getColSchm()->end();
 // }
-

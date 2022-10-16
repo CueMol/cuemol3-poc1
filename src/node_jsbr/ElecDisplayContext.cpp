@@ -37,16 +37,13 @@ void ElecDisplayContext::drawElem(const gfx::AbstDrawElem &data)
     auto pImpl = static_cast<ElecVBOImpl *>(data.getVBO());
     if (!pImpl) {
         auto name = LString::format("%s_%p", getSectionName().c_str(), pda);
-        printf("11111\n");
         pImpl = new ElecVBOImpl(m_pView, name, *pda);
-        printf("22222\n");
         pImpl->setLighting(m_bEnableLighting);
-        printf("33333\n");
         data.setVBO(pImpl);
-        printf("44444\n");
+        printf("VBO created (%p, %s) light %d OK\n", pImpl, name.c_str(), m_bEnableLighting);
     }
     pImpl->drawBuffer(m_pView, data.isUpdated());
-    // printf("ElecDisplayContext::drawElem\n");
+    printf("ElecDisplayContext::drawElem(%p, %d) OK\n", pImpl, data.isUpdated());
     data.setUpdated(false);
 }
 
@@ -137,7 +134,7 @@ void ElecDisplayContext::setMaterial(const LString &name)
     if (dvalue >= -0.1) {
         shin = dvalue;
     }
-    
+
     // XXX
     // TODO: set material settings to draw obj (and not global lighting)
     m_pView->setLighting(amb, diff, spec, shin);

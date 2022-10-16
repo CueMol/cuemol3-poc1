@@ -326,6 +326,7 @@ export class GfxManager {
   drawBuffer(id: number, nmode: number, nelems: number,
              array_buf: any, index_buf: any, isUpdated: boolean,
              enable_lighting: boolean) : void {
+    console.log('drawBuffer enable lighting='+enable_lighting);
     const gl = this._context;
     const obj = this._draw_data[id];
     if (isUpdated) {

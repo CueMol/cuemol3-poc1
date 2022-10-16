@@ -247,18 +247,18 @@ export class WorkerService {
       new_rend.run();
     }
 
-    {
-      let new_rend = this.cmdMgr.getCmd('new_renderer');
-      new_rend.target_object = mol;
-      // new_rend.renderer_type = 'ribbon';
-      // new_rend.renderer_name = 'ribbon1';
-      // new_rend.default_style_name = 'DefaultRibbon,DefaultHSCPaint';
-      new_rend.renderer_type = 'cartoon';
-      new_rend.renderer_name = 'cartoon1';
-      new_rend.default_style_name = 'DefaultCartoon,DefaultHSCPaint';
-      new_rend.recenter_view = false;
-      new_rend.run();
-    }
+    // {
+    //   let new_rend = this.cmdMgr.getCmd('new_renderer');
+    //   new_rend.target_object = mol;
+    //   // new_rend.renderer_type = 'ribbon';
+    //   // new_rend.renderer_name = 'ribbon1';
+    //   // new_rend.default_style_name = 'DefaultRibbon,DefaultHSCPaint';
+    //   new_rend.renderer_type = 'cartoon';
+    //   new_rend.renderer_name = 'cartoon1';
+    //   new_rend.default_style_name = 'DefaultCartoon,DefaultHSCPaint';
+    //   new_rend.recenter_view = false;
+    //   new_rend.run();
+    // }
     view.invalidate();
     //view.checkAndUpdate();
 
