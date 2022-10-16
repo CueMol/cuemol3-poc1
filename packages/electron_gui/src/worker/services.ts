@@ -238,8 +238,10 @@ export class WorkerService {
     {
       let new_rend = this.cmdMgr.getCmd('new_renderer');
       new_rend.target_object = mol;
-      new_rend.renderer_type = 'simple';
-      new_rend.renderer_name = 'simple1';
+      // new_rend.renderer_type = 'simple';
+      // new_rend.renderer_name = 'simple1';
+      new_rend.renderer_type = 'cpk';
+      new_rend.renderer_name = 'cpk1';
       new_rend.recenter_view = true;
       new_rend.default_style_name = 'DefaultCPKColoring';
       new_rend.run();

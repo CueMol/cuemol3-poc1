@@ -116,6 +116,7 @@ void DisplayContext::drawPixels(const Vector4D &pos,
 /// Display unit sphere
 void DisplayContext::sphere()
 {
+    // printf("XXX: sphere not implemented!!\n");
 }
 
 /// Display sphere with radius of r at position vec

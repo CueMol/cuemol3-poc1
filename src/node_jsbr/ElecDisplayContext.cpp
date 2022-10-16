@@ -37,9 +37,13 @@ void ElecDisplayContext::drawElem(const gfx::AbstDrawElem &data)
     auto pImpl = static_cast<ElecVBOImpl *>(data.getVBO());
     if (!pImpl) {
         auto name = LString::format("%s_%p", getSectionName().c_str(), pda);
+        printf("11111\n");
         pImpl = new ElecVBOImpl(m_pView, name, *pda);
+        printf("22222\n");
         pImpl->setLighting(m_bEnableLighting);
+        printf("33333\n");
         data.setVBO(pImpl);
+        printf("44444\n");
     }
     pImpl->drawBuffer(m_pView, data.isUpdated());
     // printf("ElecDisplayContext::drawElem\n");

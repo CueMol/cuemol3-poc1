@@ -6,10 +6,10 @@
 #ifndef CPK2_RENDERER_HPP_INCLUDED
 #define CPK2_RENDERER_HPP_INCLUDED
 
-#include "molvis.hpp"
 #include <gfx/DrawElem.hpp>
-
 #include <modules/molstr/MolAtomRenderer.hpp>
+
+#include "molvis.hpp"
 
 // namespace molstr { class MolCoord; }
 
@@ -17,15 +17,13 @@ class CPK2Renderer_wrap;
 
 namespace molvis {
 
-  using namespace molstr;
-  using gfx::DisplayContext;
+using namespace molstr;
+using gfx::DisplayContext;
 
-#ifdef USE_OPENGL
-  class GLSLSphereHelper;
-#endif
+// class GLSLSphereHelper;
 
-  class MOLVIS_API CPK2Renderer : public MolAtomRenderer
-  {
+class MOLVIS_API CPK2Renderer : public MolAtomRenderer
+{
     MC_SCRIPTABLE;
     MC_CLONEABLE;
 
@@ -33,8 +31,7 @@ namespace molvis {
 
     typedef MolAtomRenderer super_t;
 
-  private:
-
+private:
     double m_vdwr_H;
     double m_vdwr_C;
     double m_vdwr_N;
@@ -52,7 +49,7 @@ namespace molvis {
 
     bool m_bCheckShaderOK;
 
-  public:
+public:
     CPK2Renderer();
     virtual ~CPK2Renderer();
 
@@ -78,17 +75,24 @@ namespace molvis {
     virtual void endRend(DisplayContext *pdl);
 
     virtual void rendAtom(DisplayContext *pdl, MolAtomPtr pAtom, bool fbonded);
-    virtual void rendBond(DisplayContext *pdl, MolAtomPtr pAtom1, MolAtomPtr pAtom2, MolBond *pMB);
+    virtual void rendBond(DisplayContext *pdl, MolAtomPtr pAtom1, MolAtomPtr pAtom2,
+                          MolBond *pMB);
 
     //////////////////////////////////////////////////////
     // properties
 
     virtual void propChanged(qlib::LPropEvent &ev);
 
-    int getDetail() const { return m_nDetail; }
-    void setDetail(int n) { m_nDetail = n; }
+    int getDetail() const
+    {
+        return m_nDetail;
+    }
+    void setDetail(int n)
+    {
+        m_nDetail = n;
+    }
 
-  private:
+private:
     double getVdWRadius(MolAtomPtr pAtom);
 
     ///////////////////////////////////
@@ -99,30 +103,33 @@ namespace molvis {
 
     void renderVBOImpl();
 
-  private:
-    ///////////////////////////////////
-    // shader rendering implementations
+// private:
+//     ///////////////////////////////////
+//     // shader rendering implementations
 
-#ifdef USE_OPENGL
-    GLSLSphereHelper *m_pSlSph;
-    void initShader();
-    void renderShaderImpl();
-#endif
+//     GLSLSphereHelper *m_pSlSph;
+//     void initShader();
+//     void renderShaderImpl();
 
-  private:
+private:
     int m_nGlRendMode;
 
-  public:
-    static const int REND_DEFAULT=0;
-    static const int REND_SHADER=1;
-    static const int REND_VBO=2;
-    static const int REND_GLU=3;
+public:
+    static const int REND_DEFAULT = 0;
+    static const int REND_SHADER = 1;
+    static const int REND_VBO = 2;
+    static const int REND_GLU = 3;
 
-    int getGLRenderMode() const { return m_nGlRendMode; }
-    void setGLRenderMode(int n) { m_nGlRendMode = n; } 
-  };
+    int getGLRenderMode() const
+    {
+        return m_nGlRendMode;
+    }
+    void setGLRenderMode(int n)
+    {
+        m_nGlRendMode = n;
+    }
+};
 
-}
+}  // namespace molvis
 
 #endif
-
