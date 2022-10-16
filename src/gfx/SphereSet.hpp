@@ -376,54 +376,6 @@ namespace gfx {
 
   };
 
-  ////////////////////////////////////////////////////////////////////////////////
-
-/*
-
-  class GFX_API SphereSet
-  {
-  private:
-    struct ElemType
-    {
-      Vector4D posr;
-      quint32 ccode;
-    };
-
-    std::deque<ElemType> m_data;
-    
-    /// tesselation detail
-    int m_nDetail;
-
-    /// default alpha (multiplied to all alpha comp)
-    double m_defAlpha;
-
-    /// built draw elem object
-    DrawElemVNCI32 *m_pDrawElem;
-
-  public:
-    SphereSet();
-    virtual ~SphereSet();
-
-    void setAlpha(double d) { m_defAlpha = d; }
-
-    /// estimate size / allocate draw elem object
-    void create(int nsize, int ndetail);
-
-    /// render a sphere
-    void sphere(int index, const Vector4D &pos, double r, const ColorPtr &col);
-
-    /// build draw elem objects
-    DrawElem *buildDrawElem();
-
-  private:
-    void estimateMeshSize(int &, int &);
-    void buildSphere(int i, int &ivt, int &ifc);
-    int selectTrig(int j, int k, int j1, int k1);
-    
-  };
-
-*/
-
 }
 
 #endif

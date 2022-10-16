@@ -6,6 +6,25 @@
 
 namespace qsys {
 
+// TODO: use uint8 for colors/remove w
+struct LineDrawAttr
+{
+    float x, y, z, w;
+    float r, g, b, a;
+};
+using LineDrawArray = gfx::DrawAttrArray<LineDrawAttr>;
+
+
+// TODO: use uint8 for colors
+struct TrigVertAttr
+{
+    float x, y, z, w;
+    float r, g, b, a;
+    float nx, ny, nz, nw;
+};
+using TrigVertArray = gfx::DrawAttrArray<TrigVertAttr>;
+using TrigMesh = gfx::DrawAttrElems<qlib::quint32, TrigVertAttr>;
+
 class EsDisplayList : public gfx::DisplayContext
 {
 private:
@@ -13,15 +32,6 @@ private:
 
     //////////
     // lines
-
-    // TODO: use uint8 for colors/remove w
-    struct LineDrawAttr
-    {
-        float x, y, z, w;
-        float r, g, b, a;
-    };
-
-    using LineDrawArray = gfx::DrawAttrArray<LineDrawAttr>;
     LineDrawArray *m_pLineArray;
 
     using LineDrawBuf = std::deque<LineDrawAttr>;
@@ -32,20 +42,10 @@ private:
     //////////
     // triangles
 
-    // TODO: use uint8 for colors
-    struct TrigVertAttr
-    {
-        float x, y, z, w;
-        float r, g, b, a;
-        float nx, ny, nz, nw;
-    };
-
     //////////
     // trigs (vert only)
 
-    using TrigVertArray = gfx::DrawAttrArray<TrigVertAttr>;
     TrigVertArray *m_pTrigArray;
-
     using TrigVertBuf = std::deque<TrigVertAttr>;
     TrigVertBuf m_trigBuf;
 
@@ -54,7 +54,6 @@ private:
 
     gfx::GrowMesh m_mesh;
 
-    using TrigMesh = gfx::DrawAttrElems<qlib::quint32, TrigVertAttr>;
     TrigMesh *m_pTrigMesh;
 
     /////
