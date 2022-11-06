@@ -1,5 +1,4 @@
 #version 300 es
-// -*-Mode: C++;-*-
 
 layout(location = 0) in vec4 vertexPosition;
 layout(location = 1) in vec4 color;
@@ -31,13 +30,15 @@ vec4 Ambient;
 vec4 Diffuse;
 vec4 Specular;
 
-vec3 fnormal(in mat4 model_mat)
+vec3 fnormal(in mat4 model_mat, in vec4 in_normal)
 {
     // Compute the normal
-    vec3 norm = transpose(inverse(mat3(model_mat))) * normal.xyz;
-    norm = normalize(norm);
-    return norm;
+    vec3 tmp_norm = transpose(inverse(mat3(model_mat))) * in_normal.xyz;
+    // vec3 tmp_norm = in_normal.xyz;
+    tmp_norm = normalize(tmp_norm);
+    return tmp_norm;
 }
+
 
 void DirectionalLight(in vec3 normal)
 {
@@ -65,6 +66,7 @@ vec4 flight(in vec3 normal, in vec4 ecPosition, in vec4 in_color)
 {
     vec4 color;
 
+    // ConstDirectionalLight(normal);
     DirectionalLight(normal);
 
     vec4 lightModel_ambient = vec4(0.2, 0.2, 0.2, 1.0);
@@ -84,8 +86,14 @@ void main()
     gl_Position = projection * ecPos;
 
     if (enable_lighting) {
-        vec3 vnormal = fnormal(model);
+        vec3 vnormal = fnormal(model, normal);
+        // vec3 vnormal = fnormal(model, vec4(0, 0, 1, 1));
+        // vec3 vnormal = vec3(0, 0, 1);
+
         vColor = flight(vnormal, ecPos, color);
+        // vColor = flight(vnormal, ecPos, color);
+        // vColor = vec4(1, 1, 1, 1);
+        // vColor = normal;
     } else {
         vColor = color;
     }

@@ -30,10 +30,19 @@ public:
     bool color(int ind, qlib::quint32 cc)
     {
         if (ind < 0 || getSize() <= ind) return false;
-        super_t::at(ind).r = gfx::getRCode(cc);
-        super_t::at(ind).g = gfx::getGCode(cc);
-        super_t::at(ind).b = gfx::getBCode(cc);
-        super_t::at(ind).a = gfx::getACode(cc);
+
+        // uint8 color
+        // super_t::at(ind).r = gfx::getRCode(cc);
+        // super_t::at(ind).g = gfx::getGCode(cc);
+        // super_t::at(ind).b = gfx::getBCode(cc);
+        // super_t::at(ind).a = gfx::getACode(cc);
+
+        // float32 color
+        super_t::at(ind).r = gfx::getFR(cc);
+        super_t::at(ind).g = gfx::getFG(cc);
+        super_t::at(ind).b = gfx::getFB(cc);
+        super_t::at(ind).a = gfx::getFA(cc);
+
         return true;
     }
     bool vertex(int ind, const qlib::Vector4D &v)
@@ -48,10 +57,12 @@ public:
     bool normal(int ind, const qlib::Vector4D &v)
     {
         if (ind < 0 || getSize() <= ind) return false;
-        super_t::at(ind).nx = 0; //qfloat32(v.x());
-        super_t::at(ind).ny = 0; //qfloat32(v.y());
-        super_t::at(ind).nz = 0; //qfloat32(v.z());
-        super_t::at(ind).nw = 0; //qfloat32(v.w());  // 1.0f;
+        super_t::at(ind).nx = qfloat32(v.x());
+        super_t::at(ind).ny = qfloat32(v.y());
+        super_t::at(ind).nz = qfloat32(v.z());
+        super_t::at(ind).nw = 1.0f;
+        printf("normal %d (%f, %f, %f)\n", ind, super_t::at(ind).nx,
+               super_t::at(ind).ny, super_t::at(ind).nz);
         return true;
     }
 
@@ -422,35 +433,28 @@ void CPK2Renderer::renderVBOImpl()
 
     gfx::SphereSetTmpl<VBOSphereSetTrait<MyMesh>> sphs2;
 
-    // gfx::SphereSet sphs;
-    // sphs.create(nsphs, m_nDetail);
     sphs2.getdata().create(nsphs, m_nDetail);
     if (!useShaderAlpha()) {
-        // sphs.setAlpha(getDefaultAlpha());
         sphs2.getdata().setAlpha(getDefaultAlpha());
     }
 
-    // build meshes / DrawElemVNCI
+    // build meshes / DrawAttr
     {
         AtomIterator iter(pMol, getSelection());
         int i = 0;
         for (iter.first(); iter.hasMore(); iter.next()) {
             int aid = iter.getID();
             MolAtomPtr pAtom = pMol->getAtom(aid);
-            if (pAtom.isnull()) continue;  // ignore errors
-
-            // sphs.sphere(i, pAtom->getPos(),
-            // getVdWRadius(pAtom),
-            // ColSchmHolder::getColor(pAtom));
-
+            if (pAtom.isnull()) {
+                // ignore errors
+                continue;
+            }
             sphs2.getdata().sphere(i, pAtom->getPos(), getVdWRadius(pAtom),
                                    ColSchmHolder::getColor(pAtom));
-
             ++i;
         }
     }
 
-    // m_pDrawElem = sphs.buildDrawElem();
     m_pDrawElem = sphs2.getdata().buildDrawElem(&sphs2);
     m_pDrawElem->setUpdated(true);
     // finalize the coloring scheme

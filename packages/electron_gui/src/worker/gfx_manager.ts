@@ -285,6 +285,7 @@ export class GfxManager {
 
     const stride = nsize / num_elems;
     elem_info.forEach((value) => {
+      // console.log('VertAttrib=', value);
       let aloc = value['nloc'];
       gl.enableVertexAttribArray(aloc);
       gl.vertexAttribPointer(
@@ -297,7 +298,7 @@ export class GfxManager {
       );
     });
     gl.bufferData(gl.ARRAY_BUFFER, nsize, gl.STATIC_DRAW);
-    console.log('vbo nsize=', nsize);
+    console.log('VBO nsize=', nsize);
 
     // index buffer
     let indexBuffer = null;
@@ -306,7 +307,7 @@ export class GfxManager {
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
       gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, nsize_index, gl.STATIC_DRAW);
       // gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-      console.log('ibo nsize=', nsize_index);
+      console.log('IBO nsize=', nsize_index);
     }
 
     // gl.bindBuffer(gl.ARRAY_BUFFER, null);
