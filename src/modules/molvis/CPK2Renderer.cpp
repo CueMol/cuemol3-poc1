@@ -21,86 +21,6 @@
 using namespace molvis;
 using namespace molstr;
 
-class MyMesh : public qsys::TrigMesh
-{
-public:
-    using super_t = qsys::TrigMesh;
-    using index_t = qlib::quint32;
-
-    bool color(int ind, qlib::quint32 cc)
-    {
-        if (ind < 0 || getSize() <= ind) return false;
-
-        // uint8 color
-        super_t::at(ind).r = gfx::getRCode(cc);
-        super_t::at(ind).g = gfx::getGCode(cc);
-        super_t::at(ind).b = gfx::getBCode(cc);
-        super_t::at(ind).a = gfx::getACode(cc);
-
-        return true;
-    }
-    bool vertex(int ind, const qlib::Vector4D &v)
-    {
-        if (ind < 0 || getSize() <= ind) return false;
-        super_t::at(ind).x = qfloat32(v.x());
-        super_t::at(ind).y = qfloat32(v.y());
-        super_t::at(ind).z = qfloat32(v.z());
-        super_t::at(ind).w = qfloat32(v.w());  // 1.0f;
-        return true;
-    }
-    bool normal(int ind, const qlib::Vector4D &v)
-    {
-        if (ind < 0 || getSize() <= ind) return false;
-        super_t::at(ind).nx = qfloat32(v.x());
-        super_t::at(ind).ny = qfloat32(v.y());
-        super_t::at(ind).nz = qfloat32(v.z());
-        super_t::at(ind).nw = 1.0f;
-        printf("normal %d (%f, %f, %f)\n", ind, super_t::at(ind).nx,
-               super_t::at(ind).ny, super_t::at(ind).nz);
-        return true;
-    }
-
-    /// set face index for triangles mode (shortcut method)
-    void setIndex3(int ind, index_t n1, index_t n2, index_t n3)
-    {
-        // MB_ASSERT((ind * 3 + 2) < m_nIndSize);
-        super_t::atind(ind * 3 + 0) = n1;
-        super_t::atind(ind * 3 + 1) = n2;
-        super_t::atind(ind * 3 + 2) = n3;
-    }
-
-    bool getVertex(int ind, Vector4D &v) const
-    {
-        if (ind < 0 || getSize() <= ind) return false;
-        v.x() = super_t::at(ind).x;
-        v.y() = super_t::at(ind).y;
-        v.z() = super_t::at(ind).z;
-        return true;
-    }
-
-    void startIndexTriangles(int nverts, int nfaces)
-    {
-        super_t::setDrawMode(super_t::DRAW_TRIANGLES);
-
-        super_t::setAttrSize(3);
-        super_t::setAttrInfo(0, qsys::EsDisplayList::DSLOC_VERT_POS, 4,
-                             qlib::type_consts::QTC_FLOAT32,
-                             offsetof(qsys::TrigVertAttr, x));
-        // super_t::setAttrInfo(1, qsys::EsDisplayList::DSLOC_VERT_COLOR, 4,
-        //                      qlib::type_consts::QTC_FLOAT32,
-        //                      offsetof(qsys::TrigVertAttr, r));
-        super_t::setAttrInfo(1, qsys::EsDisplayList::DSLOC_VERT_NORMAL, 4,
-                             qlib::type_consts::QTC_FLOAT32,
-                             offsetof(qsys::TrigVertAttr, nx));
-        super_t::setAttrInfo(2, qsys::EsDisplayList::DSLOC_VERT_COLOR, 4,
-                             qlib::type_consts::QTC_UINT8,
-                             offsetof(qsys::TrigVertAttr, r));
-
-        super_t::alloc(nverts);
-        allocInd(nfaces * 3);
-    }
-};
-
 template <typename _DrawElemType>
 class VBOSphereSetTrait
 {
@@ -206,12 +126,9 @@ public:
         int nftot = nfaces * nsphs;
         MB_DPRINTLN("Sph> nv_tot = %d, nf_fot = %d", nvtot, nftot);
 
-        // Create DrawElemVNCI (or VNI?) object
+        // Create DrawElem object
         m_pVary = MB_NEW _DrawElemType();
         m_pVary->startIndexTriangles(nvtot, nftot);
-        // m_pVary->setDrawMode(gfx::AbstDrawAttrs::DRAW_TRIANGLES);
-        // m_pVary->alloc(nverts);
-        // m_pVary->allocInd(nfaces * 3);
 
         int ivt = 0, ifc = 0;
         for (int i = 0; i < nsphs; ++i) {
@@ -428,7 +345,7 @@ void CPK2Renderer::renderVBOImpl()
     getColSchm()->start(pMol, this);
     pMol->getColSchm()->start(pMol, this);
 
-    gfx::SphereSetTmpl<VBOSphereSetTrait<MyMesh>> sphs2;
+    gfx::SphereSetTmpl<VBOSphereSetTrait<qsys::TrigVertElems>> sphs2;
 
     sphs2.getdata().create(nsphs, m_nDetail);
     if (!useShaderAlpha()) {

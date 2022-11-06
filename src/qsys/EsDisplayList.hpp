@@ -6,6 +6,7 @@
 
 namespace qsys {
 
+// TODO: Move to gfx module??
 struct LineDrawAttr
 {
     float x, y, z, w;
@@ -14,8 +15,7 @@ struct LineDrawAttr
 };
 using LineDrawArray = gfx::DrawAttrArray<LineDrawAttr>;
 
-
-// TODO: use uint8 for colors
+// TODO: Move to gfx module??
 struct TrigVertAttr
 {
     float x, y, z, w;
@@ -23,8 +23,71 @@ struct TrigVertAttr
     qlib::quint8 r, g, b, a;
 };
 using TrigVertArray = gfx::DrawAttrArray<TrigVertAttr>;
-using TrigMesh = gfx::DrawAttrElems<qlib::quint32, TrigVertAttr>;
+// using TrigVertElems = gfx::DrawAttrElems<qlib::quint32, TrigVertAttr>;
+// Non-fixed pipeline version of DrawElemVNCI
+class TrigVertElems: public gfx::DrawAttrElems<qlib::quint32, TrigVertAttr>
+{
+public:
+    using super_t = gfx::DrawAttrElems<qlib::quint32, TrigVertAttr>;
+    using index_t = qlib::quint32;
 
+    bool color(int ind, qlib::quint32 cc)
+    {
+        if (ind < 0 || getSize() <= ind) return false;
+
+        // uint8 color
+        super_t::at(ind).r = gfx::getRCode(cc);
+        super_t::at(ind).g = gfx::getGCode(cc);
+        super_t::at(ind).b = gfx::getBCode(cc);
+        super_t::at(ind).a = gfx::getACode(cc);
+
+        return true;
+    }
+    bool vertex(int ind, const qlib::Vector4D &v)
+    {
+        if (ind < 0 || getSize() <= ind) return false;
+        super_t::at(ind).x = qfloat32(v.x());
+        super_t::at(ind).y = qfloat32(v.y());
+        super_t::at(ind).z = qfloat32(v.z());
+        super_t::at(ind).w = qfloat32(v.w());  // 1.0f;
+        return true;
+    }
+    bool normal(int ind, const qlib::Vector4D &v)
+    {
+        if (ind < 0 || getSize() <= ind) return false;
+        super_t::at(ind).nx = qfloat32(v.x());
+        super_t::at(ind).ny = qfloat32(v.y());
+        super_t::at(ind).nz = qfloat32(v.z());
+        super_t::at(ind).nw = 1.0f;
+        printf("normal %d (%f, %f, %f)\n", ind, super_t::at(ind).nx,
+               super_t::at(ind).ny, super_t::at(ind).nz);
+        return true;
+    }
+
+    /// set face index for triangles mode (shortcut method)
+    void setIndex3(int ind, index_t n1, index_t n2, index_t n3)
+    {
+        // MB_ASSERT((ind * 3 + 2) < m_nIndSize);
+        super_t::atind(ind * 3 + 0) = n1;
+        super_t::atind(ind * 3 + 1) = n2;
+        super_t::atind(ind * 3 + 2) = n3;
+    }
+
+    bool getVertex(int ind, Vector4D &v) const
+    {
+        if (ind < 0 || getSize() <= ind) return false;
+        v.x() = super_t::at(ind).x;
+        v.y() = super_t::at(ind).y;
+        v.z() = super_t::at(ind).z;
+        return true;
+    }
+
+    void startIndexTriangles(int nverts, int nfaces);
+};
+
+//////////
+// Display list impl/emulation using VBO/IBO
+//
 class EsDisplayList : public gfx::DisplayContext
 {
 private:
@@ -54,7 +117,7 @@ private:
 
     gfx::GrowMesh m_mesh;
 
-    TrigMesh *m_pTrigMesh;
+    TrigVertElems *m_pTrigMesh;
 
     /////
 

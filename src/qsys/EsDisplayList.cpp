@@ -4,6 +4,26 @@
 
 namespace qsys {
 
+void TrigVertElems::startIndexTriangles(int nverts, int nfaces)
+{
+    super_t::setDrawMode(super_t::DRAW_TRIANGLES);
+
+    super_t::setAttrSize(3);
+    super_t::setAttrInfo(0, qsys::EsDisplayList::DSLOC_VERT_POS, 4,
+                         qlib::type_consts::QTC_FLOAT32,
+                         offsetof(qsys::TrigVertAttr, x));
+    super_t::setAttrInfo(1, qsys::EsDisplayList::DSLOC_VERT_NORMAL, 4,
+                         qlib::type_consts::QTC_FLOAT32,
+                         offsetof(qsys::TrigVertAttr, nx));
+    super_t::setAttrInfo(2, qsys::EsDisplayList::DSLOC_VERT_COLOR, 4,
+                         qlib::type_consts::QTC_UINT8, offsetof(qsys::TrigVertAttr, r));
+
+    super_t::alloc(nverts);
+    allocInd(nfaces * 3);
+}
+
+//////////
+
 EsDisplayList::EsDisplayList()
     : m_pLineArray(nullptr),
       m_pTrigArray(nullptr),
@@ -379,7 +399,7 @@ void EsDisplayList::createTrigMesh()
     const size_t nMeshVerts = m_mesh.getVertexSize();
     const size_t nMeshFaces = m_mesh.getFaceSize();
     if (nMeshFaces > 0) {
-        m_pTrigMesh = new TrigMesh();
+        m_pTrigMesh = new TrigVertElems();
         m_pTrigMesh->setDrawMode(gfx::AbstDrawElem::DRAW_TRIANGLES);
         m_pTrigMesh->setAttrSize(3);
         m_pTrigMesh->setAttrInfo(0, DSLOC_VERT_POS, 4, qlib::type_consts::QTC_FLOAT32,
