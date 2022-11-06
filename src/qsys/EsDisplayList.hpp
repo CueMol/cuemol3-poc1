@@ -6,11 +6,11 @@
 
 namespace qsys {
 
-// TODO: use uint8 for colors/remove w
 struct LineDrawAttr
 {
     float x, y, z, w;
-    float r, g, b, a;
+    // float r, g, b, a;
+    qlib::quint8 r, g, b, a;
 };
 using LineDrawArray = gfx::DrawAttrArray<LineDrawAttr>;
 
@@ -19,8 +19,8 @@ using LineDrawArray = gfx::DrawAttrArray<LineDrawAttr>;
 struct TrigVertAttr
 {
     float x, y, z, w;
-    float r, g, b, a;
     float nx, ny, nz, nw;
+    qlib::quint8 r, g, b, a;
 };
 using TrigVertArray = gfx::DrawAttrArray<TrigVertAttr>;
 using TrigMesh = gfx::DrawAttrElems<qlib::quint32, TrigVertAttr>;

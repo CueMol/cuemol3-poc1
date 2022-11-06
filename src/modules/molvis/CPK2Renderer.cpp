@@ -32,16 +32,10 @@ public:
         if (ind < 0 || getSize() <= ind) return false;
 
         // uint8 color
-        // super_t::at(ind).r = gfx::getRCode(cc);
-        // super_t::at(ind).g = gfx::getGCode(cc);
-        // super_t::at(ind).b = gfx::getBCode(cc);
-        // super_t::at(ind).a = gfx::getACode(cc);
-
-        // float32 color
-        super_t::at(ind).r = gfx::getFR(cc);
-        super_t::at(ind).g = gfx::getFG(cc);
-        super_t::at(ind).b = gfx::getFB(cc);
-        super_t::at(ind).a = gfx::getFA(cc);
+        super_t::at(ind).r = gfx::getRCode(cc);
+        super_t::at(ind).g = gfx::getGCode(cc);
+        super_t::at(ind).b = gfx::getBCode(cc);
+        super_t::at(ind).a = gfx::getACode(cc);
 
         return true;
     }
@@ -92,12 +86,15 @@ public:
         super_t::setAttrInfo(0, qsys::EsDisplayList::DSLOC_VERT_POS, 4,
                              qlib::type_consts::QTC_FLOAT32,
                              offsetof(qsys::TrigVertAttr, x));
-        super_t::setAttrInfo(1, qsys::EsDisplayList::DSLOC_VERT_COLOR, 4,
-                             qlib::type_consts::QTC_FLOAT32,
-                             offsetof(qsys::TrigVertAttr, r));
-        super_t::setAttrInfo(2, qsys::EsDisplayList::DSLOC_VERT_NORMAL, 4,
+        // super_t::setAttrInfo(1, qsys::EsDisplayList::DSLOC_VERT_COLOR, 4,
+        //                      qlib::type_consts::QTC_FLOAT32,
+        //                      offsetof(qsys::TrigVertAttr, r));
+        super_t::setAttrInfo(1, qsys::EsDisplayList::DSLOC_VERT_NORMAL, 4,
                              qlib::type_consts::QTC_FLOAT32,
                              offsetof(qsys::TrigVertAttr, nx));
+        super_t::setAttrInfo(2, qsys::EsDisplayList::DSLOC_VERT_COLOR, 4,
+                             qlib::type_consts::QTC_UINT8,
+                             offsetof(qsys::TrigVertAttr, r));
 
         super_t::alloc(nverts);
         allocInd(nfaces * 3);
