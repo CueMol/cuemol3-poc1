@@ -7,6 +7,14 @@
 
 namespace node_jsbr {
 
+const char *convNormedType(int itype) {
+    if (itype == qlib::type_consts::QTC_FLOAT32 ||
+        itype == qlib::type_consts::QTC_FLOAT64)
+        return "false";
+    else
+        return "true";
+}
+
 class ElecVBOImpl : public gfx::VBORep
 {
 private:
@@ -40,10 +48,12 @@ public:
             json_str += "{";
             json_str +=
                 // LString::format("\"name\": \"%s\",", data.getAttrName(i).c_str());
-                LString::format("\"nloc\": \"%d\",", data.getAttrLoc(i));
-            json_str += LString::format("\"nelems\": \"%d\",", data.getAttrElemSize(i));
-            json_str += LString::format("\"itype\": \"%d\",", data.getAttrTypeID(i));
-            json_str += LString::format("\"npos\": \"%d\"", data.getAttrPos(i));
+                LString::format("\"nloc\": %d,", data.getAttrLoc(i));
+            json_str += LString::format("\"nelems\": %d,", data.getAttrElemSize(i));
+            json_str += LString::format("\"itype\": %d,", data.getAttrTypeID(i));
+            json_str += LString::format("\"normed\": %s,",
+                                        convNormedType(data.getAttrTypeID(i)));
+            json_str += LString::format("\"npos\": %d", data.getAttrPos(i));
             json_str += "}";
         }
         json_str += "]";

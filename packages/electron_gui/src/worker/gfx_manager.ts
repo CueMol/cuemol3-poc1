@@ -29,11 +29,48 @@ export class GfxManager {
 
   private _enable_lighting_loc: number = 0;
 
+  private _conv_gl_types = {};
+
   constructor(cuemol: any) {
     this.cuemol = cuemol;
     this._sceMgr = this.cuemol.getService('SceneManager');
   }
   
+  initConvTable() : void {
+    const gl = this._context;
+
+    // TODO: Use type ID defs in qlib/LTypes.hpp ??
+    // case qlib::type_consts::QTC_BOOL:
+    //   return GL_BOOL;
+    this._conv_gl_types[0] = gl.BOOL;
+    // case qlib::type_consts::QTC_UINT8:
+    //   return GL_UNSIGNED_BYTE;
+    this._conv_gl_types[1] = gl.UNSIGNED_BYTE;
+    // case qlib::type_consts::QTC_UINT16:
+    //   return GL_UNSIGNED_SHORT;
+    this._conv_gl_types[2] = gl.UNSIGNED_SHORT;
+    // case qlib::type_consts::QTC_UINT32:
+    //   return GL_UNSIGNED_INT;
+    this._conv_gl_types[3] = gl.UNSIGNED_INT;
+
+    // case qlib::type_consts::QTC_INT8:
+    //   return GL_BYTE;
+    this._conv_gl_types[11] = gl.BYTE;
+    // case qlib::type_consts::QTC_INT16:
+    //   return GL_SHORT;
+    this._conv_gl_types[12] = gl.SHORT;
+    // case qlib::type_consts::QTC_INT32:
+    //   return GL_INT;
+    this._conv_gl_types[13] = gl.INT;
+
+    // case qlib::type_consts::QTC_FLOAT32:
+    //   return GL_FLOAT;
+    this._conv_gl_types[21] = gl.FLOAT;
+    // case qlib::type_consts::QTC_FLOAT64:
+    //   return GL_DOUBLE;
+    this._conv_gl_types[22] = gl.DOUBLE;
+  }
+
   bindCanvas(canvas: any, view_id: number, dpr: number|null=null) : void {
     if (this._canvas !== null) {
       throw Error('already bound to canvas');
@@ -41,6 +78,7 @@ export class GfxManager {
     this._canvas = canvas;
     this._context = canvas.getContext('webgl2');
     const gl = this._context;
+    this.initConvTable();
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
     gl.disable(gl.CULL_FACE);
@@ -286,13 +324,13 @@ export class GfxManager {
     const stride = nsize / num_elems;
     elem_info.forEach((value) => {
       // console.log('VertAttrib=', value);
-      let aloc = value['nloc'];
+      const aloc = value['nloc'];
       gl.enableVertexAttribArray(aloc);
       gl.vertexAttribPointer(
         aloc,
         value['nelems'],
-        gl.FLOAT,
-        false,
+        this._conv_gl_types[value['itype']],
+        value['normed'],
         stride,
         value['npos']
       );

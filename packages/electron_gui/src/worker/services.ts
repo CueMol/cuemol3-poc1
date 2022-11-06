@@ -255,13 +255,13 @@ export class WorkerService {
       let new_rend = this.cmdMgr.getCmd('new_renderer');
       new_rend.target_object = mol;
 
-      // new_rend.renderer_type = 'ribbon';
-      // new_rend.renderer_name = 'ribbon1';
-      // new_rend.default_style_name = 'DefaultRibbon,DefaultHSCPaint';
+      new_rend.renderer_type = 'ribbon';
+      new_rend.renderer_name = 'ribbon1';
+      new_rend.default_style_name = 'DefaultRibbon,DefaultHSCPaint';
 
-      new_rend.renderer_type = 'simple';
-      new_rend.renderer_name = 'simple1';
-      new_rend.default_style_name = 'DefaultCPKColoring';
+      // new_rend.renderer_type = 'simple';
+      // new_rend.renderer_name = 'simple1';
+      // new_rend.default_style_name = 'DefaultCPKColoring';
 
       new_rend.recenter_view = false;
       new_rend.run();
