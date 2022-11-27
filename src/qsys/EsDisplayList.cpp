@@ -339,7 +339,7 @@ void EsDisplayList::createLineArray()
     const size_t nelems_line = m_lineBuf.size();
     printf("EsDisplayList::recordEnd nelems_line %zu\n", nelems_line);
     if (nelems_line > 0) {
-        m_pLineArray = new LineDrawArray();
+        m_pLineArray = MB_NEW LineDrawArray();
         m_pLineArray->setDrawMode(gfx::AbstDrawElem::DRAW_LINES);
         m_pLineArray->setAttrSize(2);
         m_pLineArray->setAttrInfo(0, DSLOC_VERT_POS, 4, qlib::type_consts::QTC_FLOAT32,

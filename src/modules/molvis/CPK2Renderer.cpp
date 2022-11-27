@@ -16,7 +16,7 @@
 
 #include "molvis.hpp"
 
-// #include "GLSLSphereHelper.hpp"
+#include "GLSLSphereHelper.hpp"
 
 using namespace molvis;
 using namespace molstr;
@@ -147,12 +147,12 @@ CPK2Renderer::CPK2Renderer()
     m_bCheckShaderOK = true;
     m_nGlRendMode = REND_DEFAULT;
 
-    // m_pSlSph = MB_NEW GLSLSphereHelper();
+    m_pSlSph = MB_NEW GLSLSphereHelper();
 }
 
 CPK2Renderer::~CPK2Renderer()
 {
-    // delete m_pSlSph;
+    delete m_pSlSph;
 }
 
 const char *CPK2Renderer::getTypeName() const

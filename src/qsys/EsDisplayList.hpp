@@ -59,8 +59,6 @@ public:
         super_t::at(ind).ny = qfloat32(v.y());
         super_t::at(ind).nz = qfloat32(v.z());
         super_t::at(ind).nw = 1.0f;
-        printf("normal %d (%f, %f, %f)\n", ind, super_t::at(ind).nx,
-               super_t::at(ind).ny, super_t::at(ind).nz);
         return true;
     }
 

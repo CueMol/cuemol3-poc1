@@ -20,7 +20,7 @@ namespace molvis {
 using namespace molstr;
 using gfx::DisplayContext;
 
-// class GLSLSphereHelper;
+class GLSLSphereHelper;
 
 class MOLVIS_API CPK2Renderer : public MolAtomRenderer
 {
@@ -103,13 +103,13 @@ private:
 
     void renderVBOImpl();
 
-// private:
-//     ///////////////////////////////////
-//     // shader rendering implementations
+private:
+    ///////////////////////////////////
+    // shader rendering implementations
 
-//     GLSLSphereHelper *m_pSlSph;
-//     void initShader();
-//     void renderShaderImpl();
+    GLSLSphereHelper *m_pSlSph;
+    void initShader();
+    void renderShaderImpl();
 
 private:
     int m_nGlRendMode;

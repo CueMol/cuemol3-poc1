@@ -21,7 +21,8 @@ namespace detail {
 struct LLocale;
 }
 
-template <class T> using StringListContainer = std::list<T>;
+template <class T>
+using StringListContainer = std::list<T>;
 
 class QLIB_API LString : public LObject
 {
@@ -90,6 +91,16 @@ public:
     const char *c_str() const
     {
         return m_data.c_str();
+    }
+
+    const std::string &data() const
+    {
+        return m_data;
+    }
+
+    std::string &data()
+    {
+        return m_data;
     }
 
     char getAt(size_type n) const

@@ -4,6 +4,7 @@
 #include <qsys/SysConfig.hpp>
 
 #include "ElecView.hpp"
+#include "ShaderLoader.hpp"
 
 namespace node_jsbr {
 
@@ -41,9 +42,12 @@ qlib::LString ElecProgramObject::loadFile(const qlib::LString &filename)
 {
     auto pconf = qsys::SysConfig::getInstance();
     LString fnam = pconf->convPathName(filename);
-    // qlib::LString fnam = filename;
 
     // read source file
+    ShaderLoader sldr("^//include\\s*\"([_0-9a-zA-Z\\/\\.]+)\"");
+    qlib::LString xxx = sldr.load(fnam.data());
+    LOG_DPRINTLN("XXX: <<<\n%s\n>>>", xxx.c_str());
+
     qlib::FileInStream fis;
     fis.open(fnam);
     char sbuf[1024];

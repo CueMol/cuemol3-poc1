@@ -57,7 +57,7 @@ public:
             json_str += "}";
         }
         json_str += "]";
-        printf("buffer info: %s\n", json_str.c_str());
+        // printf("buffer info: %s\n", json_str.c_str());
         const size_t buffer_size = data.getDataSize();
         const size_t nelems = data.getSize();
 
@@ -67,7 +67,7 @@ public:
         auto pbuf = const_cast<void *>(data.getData());
         Napi::Object array_buf = Napi::ArrayBuffer::New(
             env, pbuf, buffer_size, [](Napi::Env, void *finalizeData) {
-                printf("finalizer called for %p\n", finalizeData);
+                LOG_DPRINTLN("finalizer called for %p", finalizeData);
                 // delete [] static_cast<float*>(finalizeData);
             });
         m_arrayBufRef = Napi::Persistent(array_buf);
@@ -79,7 +79,7 @@ public:
             MB_ASSERT(pind != nullptr);
             Napi::Object ind_buf = Napi::ArrayBuffer::New(
                 env, pind, nindex_bytes, [](Napi::Env, void *finalizeData) {
-                    printf("IndexBufferfinalizer called for %p\n", finalizeData);
+                    LOG_DPRINTLN("IndexBufferfinalizer called for %p", finalizeData);
                     // delete [] static_cast<float*>(finalizeData);
                 });
             m_indexBufRef = Napi::Persistent(ind_buf);
