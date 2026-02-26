@@ -12,6 +12,10 @@ private:
     using super_t = gfx::DisplayContext;
 
     //////////
+    // points
+    // TODO: impl
+
+    //////////
     // lines
 
     // TODO: use uint8 for colors/remove w
