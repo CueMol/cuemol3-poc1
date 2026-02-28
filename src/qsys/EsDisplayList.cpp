@@ -4,6 +4,26 @@
 
 namespace qsys {
 
+void TrigVertElems::startIndexTriangles(int nverts, int nfaces)
+{
+    super_t::setDrawMode(super_t::DRAW_TRIANGLES);
+
+    super_t::setAttrSize(3);
+    super_t::setAttrInfo(0, qsys::EsDisplayList::DSLOC_VERT_POS, 4,
+                         qlib::type_consts::QTC_FLOAT32,
+                         offsetof(qsys::TrigVertAttr, x));
+    super_t::setAttrInfo(1, qsys::EsDisplayList::DSLOC_VERT_NORMAL, 4,
+                         qlib::type_consts::QTC_FLOAT32,
+                         offsetof(qsys::TrigVertAttr, nx));
+    super_t::setAttrInfo(2, qsys::EsDisplayList::DSLOC_VERT_COLOR, 4,
+                         qlib::type_consts::QTC_UINT8, offsetof(qsys::TrigVertAttr, r));
+
+    super_t::alloc(nverts);
+    allocInd(nfaces * 3);
+}
+
+//////////
+
 EsDisplayList::EsDisplayList()
     : m_pLineArray(nullptr),
       m_pTrigArray(nullptr),
@@ -258,15 +278,12 @@ void EsDisplayList::end()
 void EsDisplayList::drawLine(const Vector4D &v1, qlib::quint32 c1, const Vector4D &v2,
                              qlib::quint32 c2)
 {
-    m_lineBuf.push_back(LineDrawAttr{float(v1.x()), float(v1.y()), float(v1.z()),
-                                     float(v1.w()), float(gfx::getFR(c1)),
-                                     float(gfx::getFG(c1)), float(gfx::getFB(c1)),
-                                     float(gfx::getFA(c1))});
-
-    m_lineBuf.push_back(LineDrawAttr{float(v2.x()), float(v2.y()), float(v2.z()),
-                                     float(v2.w()), float(gfx::getFR(c2)),
-                                     float(gfx::getFG(c2)), float(gfx::getFB(c2)),
-                                     float(gfx::getFA(c2))});
+    m_lineBuf.push_back(LineDrawAttr{
+            float(v1.x()), float(v1.y()), float(v1.z()), float(v1.w()),
+            gfx::getRCode(c1), gfx::getGCode(c1), gfx::getBCode(c1), gfx::getACode(c1)});
+    m_lineBuf.push_back(LineDrawAttr{
+            float(v2.x()), float(v2.y()), float(v2.z()), float(v2.w()),
+            gfx::getRCode(c2), gfx::getGCode(c2), gfx::getBCode(c2), gfx::getACode(c2)});
 }
 
 void EsDisplayList::addTrigVert(const Vector4D &v1, const Vector4D &n1,
@@ -277,14 +294,18 @@ void EsDisplayList::addTrigVert(const Vector4D &v1, const Vector4D &n1,
         float(v1.y()),
         float(v1.z()),
         float(v1.w()),
-        float(gfx::getFR(c1)),
-        float(gfx::getFG(c1)),
-        float(gfx::getFB(c1)),
-        float(gfx::getFA(c1)),
+        // float(gfx::getFR(c1)),
+        // float(gfx::getFG(c1)),
+        // float(gfx::getFB(c1)),
+        // float(gfx::getFA(c1)),
         float(n1.x()),
         float(n1.y()),
         float(n1.z()),
         float(n1.w()),
+        gfx::getRCode(c1),
+        gfx::getGCode(c1),
+        gfx::getBCode(c1),
+        gfx::getACode(c1),
     });
 }
 
@@ -318,13 +339,13 @@ void EsDisplayList::createLineArray()
     const size_t nelems_line = m_lineBuf.size();
     printf("EsDisplayList::recordEnd nelems_line %zu\n", nelems_line);
     if (nelems_line > 0) {
-        m_pLineArray = new LineDrawArray();
+        m_pLineArray = MB_NEW LineDrawArray();
         m_pLineArray->setDrawMode(gfx::AbstDrawElem::DRAW_LINES);
         m_pLineArray->setAttrSize(2);
         m_pLineArray->setAttrInfo(0, DSLOC_VERT_POS, 4, qlib::type_consts::QTC_FLOAT32,
                                   offsetof(LineDrawAttr, x));
         m_pLineArray->setAttrInfo(1, DSLOC_VERT_COLOR, 4,
-                                  qlib::type_consts::QTC_FLOAT32,
+                                  qlib::type_consts::QTC_UINT8,
                                   offsetof(LineDrawAttr, r));
         m_pLineArray->alloc(nelems_line);
 
@@ -350,11 +371,14 @@ void EsDisplayList::createTrigArray()
         m_pTrigArray->setAttrSize(3);
         m_pTrigArray->setAttrInfo(0, DSLOC_VERT_POS, 4, qlib::type_consts::QTC_FLOAT32,
                                   offsetof(TrigVertAttr, x));
-        m_pTrigArray->setAttrInfo(1, DSLOC_VERT_COLOR, 4,
-                                  qlib::type_consts::QTC_FLOAT32,
-                                  offsetof(TrigVertAttr, r));
-        m_pTrigArray->setAttrInfo(2, DSLOC_VERT_NORMAL, 4, qlib::type_consts::QTC_FLOAT32,
+        // m_pTrigArray->setAttrInfo(1, DSLOC_VERT_COLOR, 4,
+        //                           qlib::type_consts::QTC_FLOAT32,
+        //                           offsetof(TrigVertAttr, r));
+        m_pTrigArray->setAttrInfo(1, DSLOC_VERT_NORMAL, 4, qlib::type_consts::QTC_FLOAT32,
                                   offsetof(TrigVertAttr, nx));
+        m_pTrigArray->setAttrInfo(2, DSLOC_VERT_COLOR, 4,
+                                  qlib::type_consts::QTC_UINT8,
+                                  offsetof(TrigVertAttr, r));
         m_pTrigArray->alloc(nelems_trig);
 
         size_t i = 0;
@@ -375,15 +399,17 @@ void EsDisplayList::createTrigMesh()
     const size_t nMeshVerts = m_mesh.getVertexSize();
     const size_t nMeshFaces = m_mesh.getFaceSize();
     if (nMeshFaces > 0) {
-        m_pTrigMesh = new TrigMesh();
+        m_pTrigMesh = new TrigVertElems();
         m_pTrigMesh->setDrawMode(gfx::AbstDrawElem::DRAW_TRIANGLES);
         m_pTrigMesh->setAttrSize(3);
         m_pTrigMesh->setAttrInfo(0, DSLOC_VERT_POS, 4, qlib::type_consts::QTC_FLOAT32,
                                  offsetof(TrigVertAttr, x));
-        m_pTrigMesh->setAttrInfo(1, DSLOC_VERT_COLOR, 4, qlib::type_consts::QTC_FLOAT32,
-                                 offsetof(TrigVertAttr, r));
-        m_pTrigMesh->setAttrInfo(2, DSLOC_VERT_NORMAL, 4, qlib::type_consts::QTC_FLOAT32,
+        // m_pTrigMesh->setAttrInfo(1, DSLOC_VERT_COLOR, 4, qlib::type_consts::QTC_FLOAT32,
+        //                          offsetof(TrigVertAttr, r));
+        m_pTrigMesh->setAttrInfo(1, DSLOC_VERT_NORMAL, 4, qlib::type_consts::QTC_FLOAT32,
                                  offsetof(TrigVertAttr, nx));
+        m_pTrigMesh->setAttrInfo(2, DSLOC_VERT_COLOR, 4, qlib::type_consts::QTC_UINT8,
+                                 offsetof(TrigVertAttr, r));
         m_pTrigMesh->alloc(nMeshVerts);
         m_pTrigMesh->allocInd(nMeshFaces * 3);
         size_t i = 0;
@@ -394,10 +420,12 @@ void EsDisplayList::createTrigMesh()
             m_pTrigMesh->at(i) = TrigVertAttr{
                 float(v1.x()),         float(v1.y()),
                 float(v1.z()),         1.0f,
-                float(gfx::getFR(c1)), float(gfx::getFG(c1)),
-                float(gfx::getFB(c1)), float(gfx::getFA(c1)),
+                // float(gfx::getFR(c1)), float(gfx::getFG(c1)),
+                // float(gfx::getFB(c1)), float(gfx::getFA(c1)),
                 float(n1.x()),         float(n1.y()),
                 float(n1.z()),         1.0f,
+                gfx::getRCode(c1), gfx::getGCode(c1),
+                gfx::getBCode(c1), gfx::getACode(c1),
             };
             i++;
         }

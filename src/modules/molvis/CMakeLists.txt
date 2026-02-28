@@ -10,7 +10,6 @@ SET(MOLVIS_SRCS
 molvis.cpp
 AnIsoURenderer.cpp
 BallStickRenderer.cpp
-CPKRenderer.cpp
 CPK2Renderer.cpp
 CubicSpline.cpp
 SplineCoeffSet.cpp
@@ -42,7 +41,6 @@ smospl/spline_impl2.cpp
 
 SET(MOLVIS_MCWG_QIFS
 AnIsoURenderer.qif
-CPKRenderer.qif
 CPK2Renderer.qif
 BallStickRenderer.qif
 SplineRenderer.qif

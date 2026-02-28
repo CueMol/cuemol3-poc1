@@ -7,6 +7,14 @@
 
 namespace node_jsbr {
 
+const char *convNormedType(int itype) {
+    if (itype == qlib::type_consts::QTC_FLOAT32 ||
+        itype == qlib::type_consts::QTC_FLOAT64)
+        return "false";
+    else
+        return "true";
+}
+
 class ElecVBOImpl : public gfx::VBORep
 {
 private:
@@ -40,14 +48,16 @@ public:
             json_str += "{";
             json_str +=
                 // LString::format("\"name\": \"%s\",", data.getAttrName(i).c_str());
-                LString::format("\"nloc\": \"%d\",", data.getAttrLoc(i));
-            json_str += LString::format("\"nelems\": \"%d\",", data.getAttrElemSize(i));
-            json_str += LString::format("\"itype\": \"%d\",", data.getAttrTypeID(i));
-            json_str += LString::format("\"npos\": \"%d\"", data.getAttrPos(i));
+                LString::format("\"nloc\": %d,", data.getAttrLoc(i));
+            json_str += LString::format("\"nelems\": %d,", data.getAttrElemSize(i));
+            json_str += LString::format("\"itype\": %d,", data.getAttrTypeID(i));
+            json_str += LString::format("\"normed\": %s,",
+                                        convNormedType(data.getAttrTypeID(i)));
+            json_str += LString::format("\"npos\": %d", data.getAttrPos(i));
             json_str += "}";
         }
         json_str += "]";
-        printf("buffer info: %s\n", json_str.c_str());
+        // printf("buffer info: %s\n", json_str.c_str());
         const size_t buffer_size = data.getDataSize();
         const size_t nelems = data.getSize();
 
@@ -57,7 +67,7 @@ public:
         auto pbuf = const_cast<void *>(data.getData());
         Napi::Object array_buf = Napi::ArrayBuffer::New(
             env, pbuf, buffer_size, [](Napi::Env, void *finalizeData) {
-                printf("finalizer called for %p\n", finalizeData);
+                LOG_DPRINTLN("finalizer called for %p", finalizeData);
                 // delete [] static_cast<float*>(finalizeData);
             });
         m_arrayBufRef = Napi::Persistent(array_buf);
@@ -69,7 +79,7 @@ public:
             MB_ASSERT(pind != nullptr);
             Napi::Object ind_buf = Napi::ArrayBuffer::New(
                 env, pind, nindex_bytes, [](Napi::Env, void *finalizeData) {
-                    printf("IndexBufferfinalizer called for %p\n", finalizeData);
+                    LOG_DPRINTLN("IndexBufferfinalizer called for %p", finalizeData);
                     // delete [] static_cast<float*>(finalizeData);
                 });
             m_indexBufRef = Napi::Persistent(ind_buf);
