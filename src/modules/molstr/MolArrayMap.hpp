@@ -21,7 +21,7 @@ namespace molstr {
     LString atom;
     MolAtomPtr pA;
 
-    struct less_fcn : std::binary_function <MolArrayMapElem, MolArrayMapElem, bool> {
+    struct less_fcn {
       bool operator() (const MolArrayMapElem &x, const MolArrayMapElem &y) const;
     };
   };

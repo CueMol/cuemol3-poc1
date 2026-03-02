@@ -44,7 +44,7 @@ namespace molstr {
     // Definition of types for internal use
     
     /// comparison operator that defines chain ordering
-    struct chain_comp : std::binary_function <const LString &,const LString &, bool> {
+    struct chain_comp {
       bool operator() (const LString &x, const LString &y) const
       {
         return x<y;
