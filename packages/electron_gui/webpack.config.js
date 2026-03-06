@@ -39,6 +39,14 @@ const rendererConfig = {
     filename: 'index.js',
   },
   devtool: 'inline-source-map',
+
+  resolve: {
+    alias: {
+      'react': path.resolve(__dirname, 'node_modules', 'react'),
+      'react-dom': path.resolve(__dirname, 'node_modules', 'react-dom'),
+    },
+  },
+
   plugins: [
     new HtmlWebpackPlugin({
       template: "./src/index.html"
