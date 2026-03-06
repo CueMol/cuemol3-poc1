@@ -54,12 +54,13 @@ public:
         auto peer = pView->getPeerObj();
         auto env = peer.Env();
 
-        auto pbuf = const_cast<void *>(data.getData());
-        Napi::Object array_buf = Napi::ArrayBuffer::New(
-            env, pbuf, buffer_size, [](Napi::Env, void *finalizeData) {
-                printf("finalizer called for %p\n", finalizeData);
-                // delete [] static_cast<float*>(finalizeData);
-            });
+        // auto pbuf = const_cast<void *>(data.getData());
+        // Napi::Object array_buf = Napi::ArrayBuffer::New(
+        //     env, pbuf, buffer_size, [](Napi::Env, void *finalizeData) {
+        //         printf("finalizer called for %p\n", finalizeData);
+        //         // delete [] static_cast<float*>(finalizeData);
+        //     });
+        Napi::Object array_buf = createBuffer(env, data.getData(), buffer_size);
         m_arrayBufRef = Napi::Persistent(array_buf);
 
         // index data
@@ -67,11 +68,12 @@ public:
         if (nindex_bytes > 0) {
             auto pind = const_cast<void *>(data.getIndData());
             MB_ASSERT(pind != nullptr);
-            Napi::Object ind_buf = Napi::ArrayBuffer::New(
-                env, pind, nindex_bytes, [](Napi::Env, void *finalizeData) {
-                    printf("IndexBufferfinalizer called for %p\n", finalizeData);
-                    // delete [] static_cast<float*>(finalizeData);
-                });
+            // Napi::Object ind_buf = Napi::ArrayBuffer::New(
+            //     env, pind, nindex_bytes, [](Napi::Env, void *finalizeData) {
+            //         printf("IndexBufferfinalizer called for %p\n", finalizeData);
+            //         // delete [] static_cast<float*>(finalizeData);
+            //     });
+            Napi::Object ind_buf = createBuffer(env, pind, nindex_bytes);
             m_indexBufRef = Napi::Persistent(ind_buf);
             m_nIndexElems = data.getIndSize();
         }
