@@ -14,7 +14,7 @@ export const App: React.FC = () => {
   const { molViewID, addMolView } = useMolView();
 
   useEffect(() => {
-    if (molViewID === null) return null;
+    if (molViewID === null) return;
 
     const onOpenFile = async (paths: string[]) => {
       console.log('ipcRenderer.on: ', paths);

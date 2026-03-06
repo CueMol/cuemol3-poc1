@@ -37,6 +37,10 @@ void ElecView::setUpModelMat(int nid)
         return;
     }
 
+    constexpr size_t MODEL_BUF_SIZE = 4 * 4 * sizeof(float);
+    constexpr size_t NORM_BUF_SIZE = 3 * 3 * sizeof(float);
+    copyToBuffer(m_modelArrayBuf, &m_modelMat.ai(1),MODEL_BUF_SIZE + NORM_BUF_SIZE);
+
     auto peer = m_peerObjRef.Value();
     auto env = peer.Env();
     auto method = peer.Get("setUpModelMat").As<Napi::Function>();
@@ -62,6 +66,9 @@ void ElecView::setUpProjMat(int cx, int cy)
 
     float *pbuf = &m_projMat.ai(1);
 
+    constexpr size_t PROJ_BUF_SIZE = 4 * 4 * sizeof(float);
+    copyToBuffer(m_projArrayBuf, &m_projMat.ai(1), PROJ_BUF_SIZE);
+
     constexpr size_t buf_size = 4 * 4;
     try {
         auto peer = m_peerObjRef.Value();
@@ -85,6 +92,10 @@ void ElecView::updateLightingUBO()
         printf("ElecView::updateLightingUBO> ElecView is not bound.\n");
         return;
     }
+
+    const size_t LIGHT_ARRAY_SIZE = m_lightArray.size() * sizeof(float);
+    copyToBuffer(m_lightArrayBuf, m_lightArray.data(), LIGHT_ARRAY_SIZE);
+
     auto peer = m_peerObjRef.Value();
     auto env = peer.Env();
     auto method = peer.Get("setUpLight").As<Napi::Function>();
@@ -138,13 +149,15 @@ void ElecView::createModelMatArrayBuf(Napi::Env env)
 {
     constexpr size_t MODEL_BUF_SIZE = 4 * 4 * sizeof(float);
     constexpr size_t NORM_BUF_SIZE = 3 * 3 * sizeof(float);
-
     float *pbuf = &m_modelMat.ai(1);
-    Napi::Object array_buf = Napi::ArrayBuffer::New(
-        env, pbuf, MODEL_BUF_SIZE + NORM_BUF_SIZE, [](Napi::Env, void *finalizeData) {
-            printf("finalizer called for %p\n", finalizeData);
-            // delete [] static_cast<float*>(finalizeData);
-        });
+
+    // Napi::Object array_buf = Napi::ArrayBuffer::New(
+    //     env, pbuf, MODEL_BUF_SIZE + NORM_BUF_SIZE, [](Napi::Env, void *finalizeData) {
+    //         printf("finalizer called for %p\n", finalizeData);
+    //         // delete [] static_cast<float*>(finalizeData);
+    //     });
+    Napi::Object array_buf = createBuffer(env, pbuf, MODEL_BUF_SIZE + NORM_BUF_SIZE);
+
     m_modelArrayBuf = Napi::Persistent(array_buf);
 }
 
@@ -152,11 +165,13 @@ void ElecView::createProjMatArrayBuf(Napi::Env env)
 {
     constexpr size_t PROJ_BUF_SIZE = 4 * 4 * sizeof(float);
     float *pbuf = &m_projMat.ai(1);
-    Napi::Object array_buf = Napi::ArrayBuffer::New(
-        env, pbuf, PROJ_BUF_SIZE, [](Napi::Env, void *finalizeData) {
-            printf("finalizer called for %p\n", finalizeData);
-            // delete [] static_cast<float*>(finalizeData);
-        });
+
+    // Napi::Object array_buf = Napi::ArrayBuffer::New(
+    //     env, pbuf, PROJ_BUF_SIZE, [](Napi::Env, void *finalizeData) {
+    //         printf("finalizer called for %p\n", finalizeData);
+    //         // delete [] static_cast<float*>(finalizeData);
+    //     });
+    Napi::Object array_buf = createBuffer(env, pbuf, PROJ_BUF_SIZE);
     m_projArrayBuf = Napi::Persistent(array_buf);
 }
 
@@ -164,11 +179,14 @@ void ElecView::createLightArrayBuf(Napi::Env env)
 {
     const size_t LIGHT_ARRAY_SIZE = m_lightArray.size() * sizeof(float);
     void *pbuf = m_lightArray.data();
-    Napi::Object array_buf = Napi::ArrayBuffer::New(
-        env, pbuf, LIGHT_ARRAY_SIZE, [](Napi::Env, void *finalizeData) {
-            printf("finalizer called for %p\n", finalizeData);
-            // delete [] static_cast<float*>(finalizeData);
-        });
+
+    // Napi::Object array_buf = Napi::ArrayBuffer::New(
+    //     env, pbuf, LIGHT_ARRAY_SIZE, [](Napi::Env, void *finalizeData) {
+    //         printf("finalizer called for %p\n", finalizeData);
+    //         // delete [] static_cast<float*>(finalizeData);
+    //     });
+    Napi::Object array_buf = createBuffer(env, pbuf, LIGHT_ARRAY_SIZE);
+
     m_lightArrayBuf = Napi::Persistent(array_buf);
 }
 

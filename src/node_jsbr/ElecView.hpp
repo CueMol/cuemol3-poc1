@@ -64,13 +64,15 @@ public:
         return m_peerObjRef.Value();
     }
 
-    void setLighting(float amb, float diff, float spec, float shin) {
+    void setLighting(float amb, float diff, float spec, float shin)
+    {
         m_lightArray[0] = amb;
         m_lightArray[1] = diff;
         m_lightArray[2] = spec;
         m_lightArray[3] = shin;
     }
-    void setLightDir(const Vector4D &dir) {
+    void setLightDir(const Vector4D &dir)
+    {
         m_lightArray[4] = float(dir.x());
         m_lightArray[5] = float(dir.y());
         m_lightArray[6] = float(dir.z());
@@ -98,5 +100,25 @@ public:
 };
 
 void registerViewFactory();
+
+inline Napi::Object createBuffer(Napi::Env env, const void *src_data,
+                                 size_t byte_length)
+{
+    Napi::ArrayBuffer ab = Napi::ArrayBuffer::New(env, byte_length);
+    if (src_data) {
+        memcpy(ab.Data(), src_data, byte_length);
+    }
+    return ab;
+}
+
+inline void copyToBuffer(Napi::ObjectReference &obj_ref, const void *src_data,
+                         size_t byte_length)
+{
+    Napi::ArrayBuffer ab = obj_ref.Value().As<Napi::ArrayBuffer>();
+    if (ab.ByteLength() < byte_length) {
+        throw Napi::Error::New(obj_ref.Env(), "Buffer size is too small");
+    }
+    memcpy(ab.Data(), src_data, byte_length);
+}
 
 }  // namespace node_jsbr

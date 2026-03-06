@@ -15,10 +15,10 @@
     "build/Release"
   ],
   "dependencies": {
-    "bindings": "^1.5.0",
-    "cmake-js": "^6.3.0"
+    "bindings": "^1.5.0"
   },
   "devDependencies": {
+    "cmake-js": "^8.0.0",
     "node-addon-api": "^5.0.0"
   },
   "cmake-js": {
