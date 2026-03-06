@@ -15,11 +15,10 @@
   "license": "ISC",
   "dependencies": {
     "@cuemol/core": "^1.0.0",
-    "@minoru/react-dnd-treeview": "^3.5.3",
     "allotment": "^1.20.5",
-    "react": "^18.3.1",
+    "react": "^19.2.4",
     "react-complex-tree": "^2.6.1",
-    "react-dom": "^18.3.1",
+    "react-dom": "^19.2.4",
     "react-tabs": "^6.1.0"
   },
   "devDependencies": {
@@ -31,6 +30,10 @@
     "electron": "^40.8.0",
     "electron-builder": "^26.8.1",
     "ts-loader": "^9.2.6",
-    "typescript": "^4.5.5"
+    "typescript": "^5.9.3"
+  },
+  "overrides": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   }
 }

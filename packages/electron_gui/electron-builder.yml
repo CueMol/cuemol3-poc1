@@ -3,5 +3,4 @@ productName: CueMol3
 files:
   - "dist/**/*"
   - "src/**/*"
-electronVersion: 16.0.6
 asar: true
