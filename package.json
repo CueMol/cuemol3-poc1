@@ -3,24 +3,16 @@
   "version": "1.0.0",
   "description": "CueMol3 PoC1",
   "private": true,
-  "devDependencies": {
-    "css-loader": "^6.5.1",
-    "html-webpack-plugin": "^5.5.0",
-    "style-loader": "^3.3.1",
-    "webpack": "^5.65.0",
-    "webpack-cli": "^4.9.1",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+  "packageManager": "pnpm@10.30.3",
+
+  "scripts": {
+    "build": "pnpm -r run build",
+    "dev": "pnpm --filter @cuemol/electron_gui start"
   },
-  "overrides": {
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
-  },
-  "workspaces": {
-    "packages": [
-      "packages/core",
-      "packages/electron_gui",
-      "examples/simple_cli"
+
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "electron"
     ]
   }
 }
