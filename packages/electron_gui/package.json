@@ -28,8 +28,8 @@
     "@babel/preset-env": "^7.16.4",
     "@babel/preset-react": "^7.16.0",
     "babel-loader": "^8.2.3",
-    "electron": "^16.0.6",
-    "electron-builder": "^22.14.5",
+    "electron": "^28.3.3",
+    "electron-builder": "^24.13.3",
     "ts-loader": "^9.2.6",
     "typescript": "^4.5.5"
   }
