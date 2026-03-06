@@ -42,8 +42,8 @@ const rendererConfig = {
 
   resolve: {
     alias: {
-      'react': path.resolve(__dirname, 'node_modules', 'react'),
-      'react-dom': path.resolve(__dirname, 'node_modules', 'react-dom'),
+      'react': path.dirname(require.resolve('react/package.json')),
+      'react-dom': path.dirname(require.resolve('react-dom/package.json')),
     },
   },
 

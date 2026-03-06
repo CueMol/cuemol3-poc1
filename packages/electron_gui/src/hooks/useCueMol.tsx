@@ -1,7 +1,9 @@
 import React, { useState, useContext, useLayoutEffect } from 'react';
 import { cuemol_worker } from '../cuemol_worker';
 
-const CueMolContext = React.createContext();
+//const CueMolContext = React.createContext();
+const CueMolContext = React.createContext<{ cueMolReady: boolean } | null>(null);
+
 
 export function useCueMol() {
   return useContext(CueMolContext);

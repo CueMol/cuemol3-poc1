@@ -1,6 +1,7 @@
 import React, { useState, useContext } from 'react';
 
 const MolViewContext = React.createContext();
+// const MolViewContext = React.createContext<{ cueMolReady: boolean } | null>(null);
 
 export function useMolView() {
   return useContext(MolViewContext);
